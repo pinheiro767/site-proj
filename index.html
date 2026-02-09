@@ -1,254 +1,463 @@
-cd .\verena-site
-
-# cria pastas se não existirem
-New-Item -ItemType Directory -Force .\assets\css | Out-Null
-
-# =========================
-# THEME (CSS único)
-# =========================
-@'
-:root{
-  --bg:#070B14;
-  --panel: rgba(255,255,255,.06);
-  --panel2: rgba(255,255,255,.08);
-  --border: rgba(255,255,255,.12);
-  --text:#EEF2FF;
-  --muted: rgba(238,242,255,.70);
-  --muted2: rgba(238,242,255,.55);
-  --accent:#62E7FF;
-  --accent2:#B8A2FF;
-  --ok:#34D399;
-  --warn:#FBBF24;
-  --bad:#FB7185;
-  --shadow: 0 18px 50px rgba(0,0,0,.50);
-  --r:22px;
-  --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-}
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:var(--sans);
-  color:var(--text);
-  line-height:1.45;
-  background:
-    radial-gradient(1200px 700px at 12% 10%, rgba(98,231,255,.16), transparent 60%),
-    radial-gradient(1200px 700px at 90% 0%, rgba(184,162,255,.18), transparent 55%),
-    radial-gradient(1000px 750px at 55% 95%, rgba(52,211,153,.10), transparent 60%),
-    var(--bg);
-}
-.container{max-width:1120px; margin:0 auto; padding:0 18px}
-
-.topbar{
-  position:sticky; top:0; z-index:50;
-  background: rgba(7,11,20,.66);
-  backdrop-filter: blur(12px);
-  border-bottom:1px solid var(--border);
-}
-.topbar .container{
-  display:flex; align-items:center; justify-content:space-between;
-  gap:12px; padding:14px 18px; flex-wrap:wrap;
-}
-.brand{display:flex; align-items:center; gap:12px}
-.logo{
-  width:44px; height:44px; border-radius:16px;
-  display:grid; place-items:center;
-  background: linear-gradient(135deg, rgba(98,231,255,.20), rgba(184,162,255,.16));
-  border:1px solid rgba(98,231,255,.24);
-  box-shadow: 0 10px 26px rgba(0,0,0,.35);
-  font-weight:1000;
-  letter-spacing:.3px;
-}
-.brandText{display:flex; flex-direction:column}
-.brandText strong{font-size:14px}
-.brandText span{font-size:12px; color:var(--muted2)}
-
-.nav{display:flex; gap:10px; flex-wrap:wrap}
-.nav a{
-  text-decoration:none; color:var(--muted);
-  padding:8px 12px; border-radius:999px;
-  border:1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.04);
-  font-size:13px; font-weight:700;
-}
-.nav a:hover{color:var(--text); border-color: rgba(98,231,255,.28)}
-
-.hero{padding:30px 0 10px}
-.sep{height:1px;background:rgba(255,255,255,.10);margin:18px 0}
-
-.card{
-  border-radius: var(--r);
-  border:1px solid var(--border);
-  background: rgba(255,255,255,.05);
-  box-shadow: var(--shadow);
-  padding:18px;
-}
-.card h1,.card h2,.card h3{margin:0 0 10px}
-.lead{margin:0; color:var(--muted); max-width:75ch; font-size:15.5px}
-
-.grid2{display:grid; gap:12px; grid-template-columns:1fr}
-@media(min-width:980px){ .grid2{grid-template-columns: 1fr 1fr} }
-
-.btnRow{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
-.btn{
-  text-decoration:none;
-  display:inline-flex; align-items:center; justify-content:space-between;
-  gap:12px;
-  padding:12px 14px;
-  border-radius: 18px;
-  border:1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.05);
-  color: var(--text);
-  font-weight:900;
-  cursor:pointer;
-  transition: transform .08s ease, border-color .12s ease, background .12s ease;
-}
-.btn:hover{
-  border-color: rgba(98,231,255,.28);
-  background: rgba(255,255,255,.07);
-  transform: translateY(-1px);
-}
-.btn.primary{
-  border-color: rgba(98,231,255,.30);
-  background: linear-gradient(135deg, rgba(98,231,255,.16), rgba(184,162,255,.12));
-}
-.btn.danger{
-  border-color: rgba(251,113,133,.35);
-  background: rgba(251,113,133,.10);
-}
-.btn small{display:block; margin-top:3px; color:var(--muted); font-weight:700; font-size:12.5px}
-.arrow{
-  width:38px; height:38px;
-  border-radius:14px;
-  display:grid; place-items:center;
-  background: rgba(0,0,0,.22);
-  border:1px solid rgba(255,255,255,.12);
-  color: var(--muted);
-  flex: 0 0 auto;
-}
-.pillRow{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px}
-.pill{
-  display:inline-flex; align-items:center; gap:8px;
-  padding:8px 12px; border-radius:999px;
-  background: rgba(255,255,255,.05);
-  border:1px solid rgba(255,255,255,.10);
-  color: var(--muted);
-  font-size:12.5px;
-  font-weight:800;
-  white-space:nowrap;
-}
-.dot{width:8px;height:8px;border-radius:99px;background:rgba(98,231,255,.9)}
-.dot.ok{background:rgba(52,211,153,.95)}
-.dot.p{background:rgba(184,162,255,.95)}
-.callout{
-  margin-top:12px;
-  border-radius: var(--r);
-  border:1px solid rgba(98,231,255,.18);
-  background: rgba(98,231,255,.07);
-  padding:14px;
-  color: var(--muted);
-  font-size:13.5px;
-}
-.small{font-size:12.5px; color:var(--muted)}
-.list{margin:10px 0 0; padding-left:18px; color:var(--muted)}
-.list li{margin:6px 0}
-
-label{display:block;margin:10px 0 6px;color:var(--muted);font-weight:800;font-size:13px}
-input,textarea,select{
-  width:100%;
-  padding:10px;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.05);
-  color: var(--text);
-  outline:none;
-}
-textarea{min-height:92px; resize:vertical}
-input:focus,textarea:focus,select:focus{border-color: rgba(98,231,255,.28)}
-
-.tableWrap{overflow:auto;border-radius:18px;border:1px solid rgba(255,255,255,.12);margin-top:12px}
-table{width:100%;border-collapse:separate;border-spacing:0;min-width: 980px}
-th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.10);vertical-align:top}
-th{background:rgba(255,255,255,.06);color:var(--muted);font-size:12px;text-align:left}
-hr{border:0;height:1px;background:rgba(255,255,255,.10);margin:10px 0}
-footer{padding:18px 0 36px;color:var(--muted2);font-size:12.5px;text-align:center}
-'@ | Set-Content -Encoding UTF8 .\assets\css\theme.css
-
-
-# =========================
-# INDEX (bonito)
-# =========================
-@'
 <!doctype html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>VERENA — Validação PIC</title>
-  <link rel="stylesheet" href="assets/css/theme.css" />
-</head>
-<body>
-<header class="topbar">
-  <div class="container">
-    <div class="brand">
-      <div class="logo">V</div>
-      <div class="brandText">
-        <strong>VERENA — Validação PIC</strong>
-        <span>Testes • Avaliação cega • Kappa • CSV</span>
-      </div>
-    </div>
-    <nav class="nav">
-      <a href="#como-usar">Como usar</a>
-      <a href="testes.html">Testes</a>
-      <a href="a1.html">A1</a>
-      <a href="a2.html">A2</a>
-      <a href="juntar.html">Juntar</a>
-      <a href="kappa.html">Kappa</a>
-    </nav>
-  </div>
-</header>
 
-<main class="container">
-  <section class="hero">
-    <div class="grid2">
+  <style>
+    :root{
+      --bg:#070B14;
+      --border: rgba(255, 255, 255, 0.12);
+      --text:#EEF2FF;
+      --muted: rgba(238, 242, 255, 0.70);
+      --muted2: rgba(238, 242, 255, 0.55);
+      --accent: #62E7FF;
+      --accent2:#B8A2FF;
+      --ok:#34D399;
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.50);
+      --r:22px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%; width:100%}
+
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      color:var(--text);
+      line-height:1.6;
+      background:
+        radial-gradient(1200px 700px at 12% 10%, rgba(98,231,255,.16), transparent 60%),
+        radial-gradient(1200px 700px at 90% 0%, rgba(184,162,255,.18), transparent 55%),
+        radial-gradient(1000px 750px at 55% 95%, rgba(52,211,153,.10), transparent 60%),
+        var(--bg);
+      overflow-x:hidden;
+    }
+
+    header{
+      position:sticky;
+      top:0;
+      z-index:50;
+      background: rgba(7, 11, 20, 0.75);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+    }
+
+    .container{
+      max-width:1120px;
+      margin:0 auto;
+    }
+
+    .header-content{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:20px;
+      flex-wrap:wrap;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      flex:1;
+      min-width:240px;
+    }
+
+    .logo{
+      width:48px;
+      height:48px;
+      border-radius:16px;
+      display:grid;
+      place-items:center;
+      background: linear-gradient(135deg, rgba(98,231,255,0.20), rgba(184,162,255,0.16));
+      border:1px solid rgba(98,231,255,0.24);
+      box-shadow: 0 10px 26px rgba(0,0,0,0.35);
+      font-weight:900;
+      font-size:24px;
+      color: var(--accent);
+    }
+
+    .brand-text{
+      display:flex;
+      flex-direction:column;
+      gap:3px;
+    }
+    .brand-text strong{font-size:15px; font-weight:800}
+    .brand-text span{font-size:12px; color:var(--muted2); font-weight:600}
+
+    nav{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    nav a{
+      text-decoration:none;
+      color:var(--muted);
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.04);
+      font-size:13px;
+      font-weight:700;
+      transition: all .2s ease;
+    }
+    nav a:hover{
+      color:var(--text);
+      border-color: rgba(98,231,255,0.28);
+      background: rgba(98,231,255,0.08);
+    }
+
+    main{padding: 40px 20px}
+    .hero-grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:24px;
+      margin-bottom: 48px;
+    }
+    @media (min-width: 1024px){
+      .hero-grid{grid-template-columns: 1.2fr 1fr}
+    }
+
+    .card{
+      border-radius: var(--r);
+      border:1px solid var(--border);
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+      padding:32px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .card-glow{
+      position:absolute;
+      top:0; right:0;
+      width:420px; height:420px;
+      opacity:.14;
+      background: radial-gradient(circle, rgba(98,231,255,0.45) 0%, transparent 70%);
+      pointer-events:none;
+    }
+
+    h1{
+      margin:0 0 16px;
+      font-size: clamp(24px, 3vw, 30px);
+      font-weight:900;
+      line-height:1.25;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+      color:transparent;
+    }
+
+    .lead{
+      margin:0 0 24px;
+      color: var(--muted);
+      font-size: 15.5px;
+      max-width: 75ch;
+    }
+
+    .pill-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom: 24px;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 14px;
+      border-radius:999px;
+      background: rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.10);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .dot{width:8px;height:8px;border-radius:50%; background: rgba(98,231,255,0.9)}
+    .dot.ok{background: rgba(52,211,153,0.95)}
+    .dot.alt{background: rgba(184,162,255,0.95)}
+
+    .callout{
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: var(--r);
+      border:1px solid rgba(98,231,255,0.18);
+      background: rgba(98,231,255,0.07);
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .callout strong{color: var(--accent)}
+
+    h2{
+      margin:0 0 12px;
+      font-size: 22px;
+      font-weight: 900;
+    }
+
+    .card-text{
+      color: var(--muted2);
+      font-size: 14px;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    .btn-row{display:flex; flex-direction:column; gap:12px}
+    .btn{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:18px 20px;
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      font-weight: 900;
+      font-size: 15px;
+      text-decoration:none;
+      transition: all .15s ease;
+    }
+    .btn:hover{
+      border-color: rgba(98,231,255,0.28);
+      background: rgba(255,255,255,0.08);
+      transform: translateY(-2px);
+    }
+    .btn.primary{
+      border-color: rgba(98,231,255,0.35);
+      background: linear-gradient(135deg, rgba(98,231,255,0.16), rgba(184,162,255,0.12));
+    }
+
+    .btn-text{flex:1}
+    .btn-title{display:block; margin-bottom:4px}
+    .btn-desc{display:block; font-size:12px; color: var(--muted2); font-weight:700}
+
+    .arrow{
+      width:40px;
+      height:40px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      background: rgba(0,0,0,0.22);
+      border:1px solid rgba(255,255,255,0.12);
+      color: var(--muted);
+      font-weight:900;
+      font-size:18px;
+      flex: 0 0 auto;
+    }
+
+    .features-title{
+      margin: 0 0 18px;
+      font-size: 22px;
+      font-weight: 900;
+    }
+
+    .features-grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:16px;
+      margin-top: 18px;
+    }
+    @media(min-width: 768px){
+      .features-grid{grid-template-columns: 1fr 1fr}
+    }
+    .feature-card{
+      border-radius: var(--r);
+      border:1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      padding:24px;
+      transition: all .2s ease;
+    }
+    .feature-card:hover{
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(98,231,255,0.20);
+    }
+    .feature-icon{
+      width:56px;
+      height:56px;
+      border-radius: 14px;
+      display:grid;
+      place-items:center;
+      background: linear-gradient(135deg, rgba(98,231,255,0.15), rgba(184,162,255,0.12));
+      border:1px solid rgba(98,231,255,0.20);
+      margin-bottom: 14px;
+      font-size: 28px;
+    }
+    .feature-card h3{
+      margin: 0 0 10px;
+      font-size: 16px;
+      font-weight: 900;
+    }
+    .feature-card p{
+      margin:0;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    #como-usar{
+      margin-top: 48px;
+      padding: 26px;
+      border-radius: var(--r);
+      border:1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+    }
+
+    footer{
+      padding: 26px 20px;
+      border-top: 1px solid var(--border);
+      background: rgba(7,11,20,0.55);
+      text-align:center;
+      color: var(--muted2);
+      font-size: 13px;
+      margin-top: 60px;
+    }
+    .footer-links{display:flex; justify-content:center; gap:18px; flex-wrap:wrap; margin-bottom:12px}
+    .footer-links a{color: var(--muted); text-decoration:none}
+    .footer-links a:hover{color: var(--accent)}
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="container header-content">
+      <div class="brand">
+        <div class="logo">V</div>
+        <div class="brand-text">
+          <strong>VERENA — Validação PIC</strong>
+          <span>Testes • Avaliação cega • Kappa • CSV</span>
+        </div>
+      </div>
+
+      <nav>
+        <a href="#recursos">Recursos</a>
+        <a href="#como-usar">Como usar</a>
+        <a href="testes.html">Testes</a>
+        <a href="a1.html">A1</a>
+        <a href="a2.html">A2</a>
+        <a href="juntar.html">Juntar</a>
+        <a href="kappa.html">Kappa</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="hero-grid">
       <div class="card">
+        <div class="card-glow"></div>
         <h1>Comparar VERENA × GPT × Gemini com método e evidência</h1>
         <p class="lead">
           Site do PIC para validar respostas (0/1), medir concordância (Cohen’s Kappa),
           e exportar CSV para relatório — com modo simples e modo recomendado (avaliação cega).
         </p>
 
-        <div class="pillRow">
+        <div class="pill-row">
           <span class="pill"><span class="dot"></span> GitHub Pages (estático)</span>
           <span class="pill"><span class="dot ok"></span> Avaliação cega (A1/A2)</span>
-          <span class="pill"><span class="dot p"></span> Kappa + CSV automático</span>
+          <span class="pill"><span class="dot alt"></span> Kappa + CSV automático</span>
         </div>
 
         <div class="callout">
-          <strong>Importante:</strong> use cenários simulados (sem dados pessoais).  
+          <strong>Importante:</strong> use cenários simulados (sem dados pessoais).
           A VERENA atua como ferramenta educativa (sem diagnóstico/prescrição).
         </div>
       </div>
 
       <div class="card">
         <h2>Acesso rápido</h2>
-        <p class="small">O modo recomendado para pesquisa é a <strong>avaliação cega</strong>.</p>
+        <p class="card-text">O modo recomendado para pesquisa é a <strong>avaliação cega</strong>.</p>
 
-        <div class="btnRow">
+        <div class="btn-row">
           <a class="btn primary" href="testes.html">
-            <div>Testes PIC (modo simples)<small>cadastrar • avaliar • métricas • Kappa • CSV</small></div>
+            <div class="btn-text">
+              <span class="btn-title">Acessar Testes PIC</span>
+              <span class="btn-desc">cadastrar • avaliar • métricas • Kappa • CSV</span>
+            </div>
             <div class="arrow">→</div>
           </a>
+
           <a class="btn" href="a1.html">
-            <div>Avaliador 1 (cego)<small>preenche 0/1 • salva A1.json</small></div>
+            <div class="btn-text">
+              <span class="btn-title">Avaliador 1 (cego)</span>
+              <span class="btn-desc">preenche 0/1 • salva A1.json</span>
+            </div>
             <div class="arrow">→</div>
           </a>
+
           <a class="btn" href="a2.html">
-            <div>Avaliador 2 (cego)<small>preenche 0/1 • salva A2.json</small></div>
+            <div class="btn-text">
+              <span class="btn-title">Avaliador 2 (cego)</span>
+              <span class="btn-desc">preenche 0/1 • salva A2.json</span>
+            </div>
             <div class="arrow">→</div>
           </a>
+
           <a class="btn" href="juntar.html">
-            <div>Juntar resultados<small>carrega A1+A2 • Kappa • exporta CSV</small></div>
+            <div class="btn-text">
+              <span class="btn-title">Juntar resultados</span>
+              <span class="btn-desc">carrega A1 + A2 • Kappa • exporta CSV</span>
+            </div>
             <div class="arrow">→</div>
           </a>
+
           <a class="btn" href="kappa.html">
-            <div>Kappa (manual)<small>quando você já tem a matriz de contagens</small></
+            <div class="btn-text">
+              <span class="btn-title">Kappa (manual)</span>
+              <span class="btn-desc">quando você já tem a matriz de contagens</span>
+            </div>
+            <div class="arrow">→</div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <section id="recursos">
+      <h2 class="features-title">Características</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h3>Validação estruturada</h3>
+          <p>Marque respostas como corretas (1) ou incorretas (0) no modo simples ou com avaliação cega (dois avaliadores).</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🎯</div>
+          <h3>Cohen’s Kappa automático</h3>
+          <p>Meça concordância entre avaliadores com cálculo automático de Kappa — essencial para pesquisa metodológica.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📈</div>
+          <h3>Exportar CSV</h3>
+          <p>Baixe os resultados em CSV — pronto para Excel, R e ferramentas de análise estatística.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔒</div>
+          <h3>Avaliação cega</h3>
+          <p>Separação A1/A2 reduz viés e aumenta a qualidade metodológica do estudo de validação.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="como-usar">
+      <h2>Como usar</h2>
+      <ol style="margin:0; padding-left:20px; color:var(--muted); line-height:1.9;">
+        <li><strong style="color:var(--text);">Modo simples:</strong> abra <em>Testes</em>, cadastre cenários, avalie e exporte CSV.</li>
+        <li><strong style="color:var(--text);">Modo cego:</strong> A1 preenche e salva A1.json; A2 preenche e salva A2.json; depois use <em>Juntar</em>.</li>
+        <li><strong style="color:var(--text);">Segurança:</strong> use cenários simulados (sem dados pessoais).</li>
+      </ol>
+    </section>
+
+    <footer>
+      <div class="footer-links">
+        <a href="testes.html">Testes</a>
+        <a href="kappa.html">Kappa</a>
+        <a href="#como-usar">Como usar</a>
+      </div>
+      <p style="margin:0;">VERENA PIC • Site estático para validação • pronto para GitHub Pages</p>
+    </footer>
+  </main>
+</body>
+</html>
