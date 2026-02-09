@@ -1,272 +1,442 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Juntar Avaliações — PIC VERENA (Kappa + CSV)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VERENA — Juntar A1 + A2 (Kappa + CSV)</title>
+
   <style>
     :root{
-      --bg:#0b1220; --text:#eaf0ff; --muted:#a9b5d3;
-      --accent:#6ee7ff; --accent2:#a78bfa; --ok:#34d399; --warn:#fbbf24; --bad:#fb7185;
-      --r:18px;
+      --bg:#070B14; --border: rgba(255,255,255,0.12);
+      --text:#EEF2FF; --muted: rgba(238,242,255,.70); --muted2: rgba(238,242,255,.55);
+      --accent:#62E7FF; --accent2:#B8A2FF; --ok:#34D399; --warn:#FBBF24; --bad:#FB7185;
+      --shadow: 0 18px 50px rgba(0,0,0,0.50); --r:22px;
     }
-    body{margin:0;font-family:system-ui;background:var(--bg);color:var(--text)}
-    .wrap{max-width:1200px;margin:0 auto;padding:18px 14px 60px}
-    h1{margin:6px 0 6px;font-size:24px}
-    p{margin:0;color:var(--muted)}
-    .card{margin-top:14px;border:1px solid rgba(169,181,211,.16);border-radius:var(--r);background:rgba(26,37,68,.22);padding:14px}
-    .row{display:grid;grid-template-columns:1fr;gap:12px}
-    @media(min-width:900px){.row{grid-template-columns:1fr 1fr}}
-    label{display:block;margin:10px 0 6px;color:var(--muted);font-weight:800;font-size:13px}
-    input[type="file"]{width:100%;padding:10px;border-radius:12px;border:1px dashed rgba(169,181,211,.25);background:rgba(26,37,68,.18);color:var(--muted)}
-    button{cursor:pointer;border-radius:14px;padding:10px 14px;font-weight:900;border:1px solid rgba(169,181,211,.18);background:rgba(26,37,68,.35);color:var(--text)}
-    .primary{border-color:rgba(110,231,255,.22);background:linear-gradient(90deg, rgba(110,231,255,.22), rgba(167,139,250,.22))}
-    .tableWrap{overflow:auto;border-radius:18px;border:1px solid rgba(169,181,211,.16);margin-top:10px}
-    table{width:100%;border-collapse:separate;border-spacing:0;min-width:900px}
-    th,td{padding:10px;border-bottom:1px solid rgba(169,181,211,.12);vertical-align:top}
-    th{background:rgba(26,37,68,.5);color:var(--muted);font-size:12px;text-align:left}
-    .pill{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid rgba(169,181,211,.18);color:var(--muted);font-size:12px}
-    .pill.ok{border-color:rgba(52,211,153,.35);color:rgba(52,211,153,.95)}
-    .pill.warn{border-color:rgba(251,191,36,.35);color:rgba(251,191,36,.95)}
-    .pill.bad{border-color:rgba(251,113,133,.35);color:rgba(251,113,133,.95)}
-    .kpiGrid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px}
-    @media(min-width:980px){.kpiGrid{grid-template-columns:repeat(4, 1fr)}}
-    .kpi{border-radius:18px;border:1px solid rgba(169,181,211,.16);background:rgba(26,37,68,.18);padding:12px}
-    .kpi .k{font-size:12px;color:var(--muted);font-weight:900}
-    .kpi .v{margin-top:8px;font-size:20px;font-weight:1000}
-    .small{font-size:12px;color:var(--muted)}
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      color:var(--text);
+      line-height:1.6;
+      background:
+        radial-gradient(1200px 700px at 12% 10%, rgba(98,231,255,.16), transparent 60%),
+        radial-gradient(1200px 700px at 90% 0%, rgba(184,162,255,.18), transparent 55%),
+        radial-gradient(1000px 750px at 55% 95%, rgba(52,211,153,.10), transparent 60%),
+        var(--bg);
+      overflow-x:hidden;
+    }
+    header{
+      position:sticky; top:0; z-index:50;
+      background: rgba(7,11,20,0.75);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+    }
+    .container{max-width:1120px;margin:0 auto}
+    .header-content{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+    .brand{display:flex;align-items:center;gap:14px;flex:1;min-width:240px}
+    .logo{
+      width:48px;height:48px;border-radius:16px;display:grid;place-items:center;
+      background: linear-gradient(135deg, rgba(98,231,255,0.20), rgba(184,162,255,0.16));
+      border:1px solid rgba(98,231,255,0.24);
+      box-shadow: 0 10px 26px rgba(0,0,0,0.35);
+      font-weight:900;font-size:18px;color:var(--accent);
+    }
+    .brand-text strong{display:block;font-size:15px;font-weight:800}
+    .brand-text span{display:block;font-size:12px;color:var(--muted2);font-weight:600}
+    nav{display:flex;gap:8px;flex-wrap:wrap}
+    nav a{
+      text-decoration:none;color:var(--muted);
+      padding:10px 14px;border-radius:999px;border:1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.04);
+      font-size:13px;font-weight:700;transition:all .2s ease;
+    }
+    nav a:hover{color:var(--text);border-color: rgba(98,231,255,0.28);background: rgba(98,231,255,0.08)}
+    main{padding: 28px 20px}
+    .card{
+      border-radius: var(--r);
+      border:1px solid var(--border);
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+      padding:24px;
+      margin-bottom:16px;
+    }
+    h1{
+      margin:0 0 10px;
+      font-size: clamp(22px, 3vw, 28px);
+      font-weight:900;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; color:transparent;
+    }
+    h2{margin:0 0 10px;font-size:18px;font-weight:900}
+    .muted{color:var(--muted)}
+    .tiny{font-size:12.5px;color:var(--muted2)}
+    .row{display:grid;gap:12px;grid-template-columns:1fr}
+    @media(min-width:980px){ .row{grid-template-columns:1fr 1fr} }
+    .file{
+      display:block;
+      width:100%;
+      padding:12px;
+      border-radius:14px;
+      border:1px dashed rgba(255,255,255,.18);
+      background: rgba(255,255,255,.04);
+      color: var(--muted);
+    }
+    .btnRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .btn{
+      display:inline-flex;align-items:center;gap:10px;
+      padding:12px 14px;border-radius:18px;border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);color:var(--text);font-weight:900;
+      cursor:pointer;transition:all .15s ease;text-decoration:none;
+    }
+    .btn:hover{border-color: rgba(98,231,255,0.28);background: rgba(255,255,255,0.08);transform: translateY(-1px)}
+    .btn.primary{border-color: rgba(98,231,255,0.35);background: linear-gradient(135deg, rgba(98,231,255,0.16), rgba(184,162,255,0.12))}
+    .btn.ok{border-color: rgba(52,211,153,0.30);background: rgba(52,211,153,0.10)}
+    .btn.danger{border-color: rgba(251,113,133,0.35);background: rgba(251,113,133,0.10)}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);background: rgba(255,255,255,.05);color: var(--muted);
+      font-weight:800;font-size:12.5px;
+    }
+    .dot{width:8px;height:8px;border-radius:99px;background: rgba(98,231,255,.9)}
+    .dot.ok{background: rgba(52,211,153,.95)}
+    .dot.warn{background: rgba(251,191,36,.95)}
+    .dot.bad{background: rgba(251,113,133,.95)}
+    .tableWrap{overflow:auto;border-radius:18px;border:1px solid rgba(255,255,255,.12);margin-top:12px}
+    table{width:100%;min-width:980px;border-collapse:separate;border-spacing:0}
+    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.10);vertical-align:top}
+    th{background:rgba(255,255,255,.06);color:var(--muted);font-size:12px;text-align:left}
+    .metricGrid{display:grid;gap:12px;grid-template-columns:1fr}
+    @media(min-width:980px){.metricGrid{grid-template-columns:1fr 1fr 1fr}}
+    .metric{border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:14px;background:rgba(255,255,255,.04)}
+    .metric .k{font-size:12px;color:var(--muted2);font-weight:800}
+    .metric .v{font-size:20px;font-weight:1000;margin-top:4px}
+    footer{padding:26px 20px;border-top:1px solid var(--border);background:rgba(7,11,20,0.55);text-align:center;color:var(--muted2);font-size:13px;margin-top:30px}
   </style>
 </head>
+
 <body>
-  <main class="wrap">
-    <h1>Juntar Avaliações (A1 + A2) — Kappa e Export CSV</h1>
-    <p>Carregue <strong>A1.json</strong> e <strong>A2.json</strong>. O sistema calcula Kappa por critério e exporta CSV.</p>
-
-    <section class="card">
-      <div class="row">
-        <div>
-          <label>Carregar A1.json</label>
-          <input type="file" id="fileA1" accept=".json,application/json" />
-        </div>
-        <div>
-          <label>Carregar A2.json</label>
-          <input type="file" id="fileA2" accept=".json,application/json" />
-        </div>
+<header>
+  <div class="container header-content">
+    <div class="brand">
+      <div class="logo">⇄</div>
+      <div class="brand-text">
+        <strong>Juntar A1 + A2</strong>
+        <span>Calcular Kappa • Exportar CSV</span>
       </div>
-      <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
-        <button class="primary" id="merge">Juntar + Calcular</button>
-        <button class="primary" id="csv">Exportar CSV</button>
-      </div>
-      <div class="small" style="margin-top:10px">
-        Observação: os IDs dos cenários devem bater (ex.: Q001 em A1 e Q001 em A2).  
-        Se houver diferença, o sistema só junta os IDs que existirem nos dois arquivos.
-      </div>
-    </section>
+    </div>
+    <nav>
+      <a href="index.html">Início</a>
+      <a href="testes.html">Testes</a>
+      <a href="a1.html">A1</a>
+      <a href="a2.html">A2</a>
+      <a href="kappa.html">Kappa</a>
+    </nav>
+  </div>
+</header>
 
-    <section class="card" id="kpis" style="display:none;">
-      <div class="kpiGrid">
-        <div class="kpi"><div class="k">Cenários juntados</div><div class="v" id="k_total">—</div></div>
-        <div class="kpi"><div class="k">VERENA (Aprov. médio)</div><div class="v" id="k_verena">—</div></div>
-        <div class="kpi"><div class="k">GPT (Aprov. médio)</div><div class="v" id="k_gpt">—</div></div>
-        <div class="kpi"><div class="k">Gemini (Aprov. médio)</div><div class="v" id="k_gemini">—</div></div>
+<main class="container">
+  <div class="card">
+    <h1>Juntar resultados (A1 + A2)</h1>
+    <p class="muted">
+      Carregue <strong>A1.json</strong> e <strong>A2.json</strong>. O sistema faz o pareamento pelo <em>ID do cenário</em>,
+      calcula <strong>Cohen’s Kappa</strong> do “Final (0/1)” e exporta um CSV com todos os itens.
+    </p>
+    <div class="row">
+      <div>
+        <label class="muted" style="font-weight:900">Arquivo A1.json</label>
+        <input class="file" type="file" id="fileA1" accept="application/json" />
       </div>
-    </section>
+      <div>
+        <label class="muted" style="font-weight:900">Arquivo A2.json</label>
+        <input class="file" type="file" id="fileA2" accept="application/json" />
+      </div>
+    </div>
 
-    <section class="card">
-      <h2 style="margin:0 0 10px">Kappa por critério (A1 vs A2)</h2>
-      <div class="tableWrap" id="kappaWrap"></div>
-    </section>
+    <div class="btnRow">
+      <button class="btn primary" id="btnMerge">Calcular & Mostrar</button>
+      <button class="btn ok" id="btnCSV" disabled>Exportar CSV</button>
+      <button class="btn" id="btnJSON" disabled>Baixar Merge.json</button>
+      <button class="btn danger" id="btnReset">Reset</button>
+    </div>
 
-    <section class="card">
-      <h2 style="margin:0 0 10px">Prévia dos cenários juntados</h2>
-      <div class="tableWrap" id="preview"></div>
-    </section>
-  </main>
+    <div style="margin-top:10px">
+      <span class="pill"><span class="dot ok"></span> Kappa ≥ 0,80 (excelente)</span>
+      <span class="pill"><span class="dot warn"></span> 0,60–0,79 (boa)</span>
+      <span class="pill"><span class="dot bad"></span> &lt; 0,60 (revisar critérios)</span>
+    </div>
+    <p class="tiny" style="margin-top:10px">
+      Se algum ID existir em A1 e não existir em A2 (ou vice-versa), ele vai aparecer como “faltante”.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Métricas</h2>
+    <div class="metricGrid" id="metrics">
+      <div class="metric"><div class="k">Itens pareados</div><div class="v" id="m_pairs">—</div></div>
+      <div class="metric"><div class="k">Acordo observado (Po)</div><div class="v" id="m_po">—</div></div>
+      <div class="metric"><div class="k">Cohen’s Kappa</div><div class="v" id="m_kappa">—</div></div>
+    </div>
+    <p class="tiny" id="m_note" style="margin-top:10px"></p>
+  </div>
+
+  <div class="card">
+    <h2>Itens combinados</h2>
+    <div class="tableWrap">
+      <table id="tbl">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Final A1</th>
+            <th>Final A2</th>
+            <th>Acordo?</th>
+            <th>Cenário (resumo)</th>
+            <th>Obs A1 (C1–C4)</th>
+            <th>Obs A2 (C1–C4)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="tiny" style="margin-top:10px">
+      Este quadro é para auditoria rápida. O CSV vem completo (com cenário e respostas, se você quiser).
+    </p>
+  </div>
+
+  <footer>VERENA PIC • Juntar A1 + A2 • Kappa + CSV</footer>
+</main>
 
 <script>
-  const MODELS = ["VERENA","GPT","Gemini"];
-  const CRIT = [
-    {k:"acc", n:"Acurácia"},
-    {k:"safe", n:"Segurança"},
-    {k:"conf", n:"Conformidade"},
-    {k:"clear", n:"Clareza"},
-    {k:"emp", n:"Empatia"},
-    {k:"aprov", n:"Aprovado final"}
-  ];
+  let A1 = null, A2 = null;
+  let merged = [];
 
-  let A1=null, A2=null;
-  let merged=[];
-
-  const $ = (id)=>document.getElementById(id);
-  const esc = (s)=>String(s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
-
-  function readJSON(file, cb){
-    const fr = new FileReader();
-    fr.onload = () => {
-      try{ cb(JSON.parse(fr.result)); }
-      catch(e){ alert("JSON inválido: " + e.message); }
-    };
-    fr.readAsText(file);
+  function escapeHtml(s){
+    return (s??"").toString()
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
   }
 
-  $("fileA1").addEventListener("change", e=>{
-    const f=e.target.files?.[0]; if(!f) return;
-    readJSON(f, obj=>{ A1=obj; });
-  });
-  $("fileA2").addEventListener("change", e=>{
-    const f=e.target.files?.[0]; if(!f) return;
-    readJSON(f, obj=>{ A2=obj; });
-  });
-
-  function kappaBinary(pairs){
-    let a=0,b=0,c=0,d=0;
-    for(const [x,y] of pairs){
-      const X = x?1:0, Y=y?1:0;
-      if(X===1 && Y===1) a++;
-      else if(X===1 && Y===0) b++;
-      else if(X===0 && Y===1) c++;
-      else d++;
-    }
-    const N=a+b+c+d;
-    if(N===0) return {N:0, po:0, pe:0, k:0, a,b,c,d};
-    const po=(a+d)/N;
-    const p1y=(a+b)/N, p1n=(c+d)/N;
-    const p2y=(a+c)/N, p2n=(b+d)/N;
-    const pe=(p1y*p2y)+(p1n*p2n);
-    const k=(1-pe)===0?0:(po-pe)/(1-pe);
-    return {N, po, pe, k, a,b,c,d};
-  }
-
-  function interpK(k){
-    if(k < 0) return "pior que o acaso";
-    if(k < 0.20) return "fraca";
-    if(k < 0.40) return "razoável";
-    if(k < 0.60) return "moderada";
-    if(k < 0.80) return "substancial";
-    return "quase perfeita";
-  }
-
-  function avgApproved(model){
-    if(merged.length===0) return 0;
-    let s=0;
-    for(const r of merged){
-      s += (r.a1[model].aprov + r.a2[model].aprov)/2;
-    }
-    return s/merged.length;
-  }
-
-  function mergeNow(){
-    if(!A1?.rows || !A2?.rows){
-      alert("Carregue A1.json e A2.json.");
-      return;
-    }
-    const m1 = new Map(A1.rows.map(r=>[r.id, r]));
-    const m2 = new Map(A2.rows.map(r=>[r.id, r]));
-    const ids = [...m1.keys()].filter(id=>m2.has(id)).sort();
-
-    merged = ids.map(id=>{
-      const r1 = m1.get(id);
-      const r2 = m2.get(id);
-      return {
-        id,
-        tema: r1.tema || r2.tema || "",
-        pergunta: r1.pergunta || r2.pergunta || "",
-        contexto: r1.contexto || r2.contexto || "",
-        padrao: r1.padrao || r2.padrao || "",
-        resp: r1.resp || r2.resp || {VERENA:"",GPT:"",Gemini:""},
-        a1: r1.a1,
-        a2: r2.a2
+  function readJsonFile(file){
+    return new Promise((resolve, reject)=>{
+      const r = new FileReader();
+      r.onload = ()=> {
+        try{ resolve(JSON.parse(r.result)); }
+        catch(e){ reject(e); }
       };
+      r.onerror = ()=> reject(new Error("Falha ao ler arquivo"));
+      r.readAsText(file);
     });
-
-    // KPIs
-    $("kpis").style.display="block";
-    $("k_total").textContent=String(merged.length);
-    $("k_verena").textContent=(avgApproved("VERENA")*100).toFixed(1)+"%";
-    $("k_gpt").textContent=(avgApproved("GPT")*100).toFixed(1)+"%";
-    $("k_gemini").textContent=(avgApproved("Gemini")*100).toFixed(1)+"%";
-
-    // Kappa table
-    let html="<table><thead><tr><th>Critério</th>";
-    for(const m of MODELS) html += `<th>${m}</th>`;
-    html += "</tr></thead><tbody>";
-
-    for(const c of CRIT){
-      html += `<tr><td><strong>${c.n}</strong></td>`;
-      for(const m of MODELS){
-        const pairs = merged.map(r=>[r.a1[m][c.k], r.a2[m][c.k]]);
-        const rk = kappaBinary(pairs);
-        const cls = rk.k>=0.6 ? "ok" : (rk.k>=0.4 ? "warn" : "bad");
-        html += `<td>
-          <div class="pill ${cls}">κ=${rk.k.toFixed(3)} • ${interpK(rk.k)}</div>
-          <div class="small" style="margin-top:6px">N=${rk.N} | (1,1)=${rk.a} (1,0)=${rk.b} (0,1)=${rk.c} (0,0)=${rk.d}</div>
-        </td>`;
-      }
-      html += "</tr>";
-    }
-    html += "</tbody></table>";
-    $("kappaWrap").innerHTML=html;
-
-    // Preview
-    let p="<table><thead><tr><th>ID</th><th>Tema</th><th>Pergunta</th><th>Respostas (resumo)</th></tr></thead><tbody>";
-    merged.forEach(r=>{
-      const rv = (r.resp.VERENA||"").slice(0,120);
-      const rg = (r.resp.GPT||"").slice(0,120);
-      const rm = (r.resp.Gemini||"").slice(0,120);
-      p += `<tr>
-        <td>${esc(r.id)}</td>
-        <td>${esc(r.tema)}</td>
-        <td class="small">${esc(r.pergunta)}</td>
-        <td class="small">
-          <strong>VERENA:</strong> ${esc(rv)}...<br>
-          <strong>GPT:</strong> ${esc(rg)}...<br>
-          <strong>Gemini:</strong> ${esc(rm)}...
-        </td>
-      </tr>`;
-    });
-    p+="</tbody></table>";
-    $("preview").innerHTML=p;
-
-    alert("Juntado com sucesso! Agora você pode exportar CSV.");
   }
 
-  function csvEscape(v){
-    const s=String(v??"");
-    if(/[",\n]/.test(s)) return '"' + s.replaceAll('"','""') + '"';
-    return s;
+  function clamp01(v){
+    const n = Number(v);
+    if (isNaN(n)) return 0;
+    return n<=0 ? 0 : 1;
+  }
+
+  // Cohen's kappa for binary labels (0/1)
+  function kappaBinary(pairs){
+    // pairs: [{a:0/1, b:0/1}]
+    const n = pairs.length;
+    if(n === 0) return {kappa: NaN, po: NaN, pe: NaN, n:0};
+
+    let agree = 0;
+    let a1_1 = 0, a1_0 = 0, a2_1 = 0, a2_0 = 0;
+
+    for(const p of pairs){
+      const a = clamp01(p.a), b = clamp01(p.b);
+      if(a === b) agree++;
+      if(a === 1) a1_1++; else a1_0++;
+      if(b === 1) a2_1++; else a2_0++;
+    }
+
+    const po = agree / n;
+    const p1 = a1_1 / n;
+    const p0 = a1_0 / n;
+    const q1 = a2_1 / n;
+    const q0 = a2_0 / n;
+    const pe = (p1*q1) + (p0*q0);
+
+    const kappa = (1 - pe) === 0 ? NaN : (po - pe) / (1 - pe);
+    return {kappa, po, pe, n};
+  }
+
+  function interpretKappa(k){
+    if(!isFinite(k)) return {label:"Indefinido", dot:"warn", note:"Kappa não pôde ser calculado (distribuição extrema)."};
+    if(k >= 0.80) return {label:"Excelente", dot:"ok", note:"Concordância excelente (>= 0,80)."};
+    if(k >= 0.60) return {label:"Boa", dot:"warn", note:"Concordância boa (0,60 a 0,79)."};
+    return {label:"Baixa", dot:"bad", note:"Concordância baixa (< 0,60). Sugere revisar critérios e treinamento."};
+  }
+
+  function buildMerged(){
+    const mapA1 = new Map();
+    const mapA2 = new Map();
+
+    (A1.items || []).forEach(x=> mapA1.set((x.scenario_id||"").trim(), x));
+    (A2.items || []).forEach(x=> mapA2.set((x.scenario_id||"").trim(), x));
+
+    const ids = new Set([...mapA1.keys(), ...mapA2.keys()]);
+    merged = [];
+
+    ids.forEach(id=>{
+      if(!id) return;
+      const i1 = mapA1.get(id) || null;
+      const i2 = mapA2.get(id) || null;
+
+      merged.push({
+        scenario_id: id,
+        a1: i1,
+        a2: i2,
+        final_a1: i1 ? clamp01(i1.final) : null,
+        final_a2: i2 ? clamp01(i2.final) : null,
+        agree_final: (i1 && i2) ? (clamp01(i1.final) === clamp01(i2.final)) : null
+      });
+    });
+
+    merged.sort((x,y)=> x.scenario_id.localeCompare(y.scenario_id, "pt-BR", {numeric:true}));
+  }
+
+  function renderTable(){
+    const tbody = document.querySelector("#tbl tbody");
+    tbody.innerHTML = "";
+
+    merged.forEach(m=>{
+      const s = (m.a1?.scenario || m.a2?.scenario || "").slice(0,180);
+      const obs1 = m.a1 ? `C1:${m.a1.c1} C2:${m.a1.c2} C3:${m.a1.c3} C4:${m.a1.c4}` : "—";
+      const obs2 = m.a2 ? `C1:${m.a2.c1} C2:${m.a2.c2} C3:${m.a2.c3} C4:${m.a2.c4}` : "—";
+      const agreeTxt = (m.agree_final===null) ? "FALTANTE" : (m.agree_final ? "SIM" : "NÃO");
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${escapeHtml(m.scenario_id)}</td>
+        <td>${m.final_a1===null ? "—" : m.final_a1}</td>
+        <td>${m.final_a2===null ? "—" : m.final_a2}</td>
+        <td>${agreeTxt}</td>
+        <td>${escapeHtml(s)}</td>
+        <td>${escapeHtml(obs1)}</td>
+        <td>${escapeHtml(obs2)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function updateMetrics(){
+    const pairs = merged
+      .filter(m => m.final_a1!==null && m.final_a2!==null)
+      .map(m => ({a:m.final_a1, b:m.final_a2}));
+
+    const res = kappaBinary(pairs);
+    const k = res.kappa;
+
+    document.getElementById("m_pairs").textContent = String(res.n);
+    document.getElementById("m_po").textContent = isFinite(res.po) ? res.po.toFixed(3) : "—";
+    document.getElementById("m_kappa").textContent = isFinite(k) ? k.toFixed(3) : "—";
+
+    const interp = interpretKappa(k);
+    document.getElementById("m_note").textContent = interp.note;
+
+    // enable exports
+    document.getElementById("btnCSV").disabled = merged.length===0;
+    document.getElementById("btnJSON").disabled = merged.length===0;
+  }
+
+  function csvSafe(v){
+    const s = (v??"").toString().replaceAll('"','""');
+    return `"${s}"`;
+  }
+
+  function download(filename, text, mime="text/plain"){
+    const a = document.createElement("a");
+    a.href = `data:${mime};charset=utf-8,` + encodeURIComponent(text);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   }
 
   function exportCSV(){
-    if(merged.length===0){
-      alert("Nada juntado ainda. Clique em Juntar + Calcular.");
-      return;
-    }
     const headers = [
-      "id","tema","pergunta","contexto","padrao",
-      "resp_verena","resp_gpt","resp_gemini",
-      ...MODELS.flatMap(m => CRIT.map(c => `a1_${m}_${c.k}`)),
-      ...MODELS.flatMap(m => CRIT.map(c => `a2_${m}_${c.k}`))
+      "scenario_id",
+      "final_a1","final_a2","agree_final",
+      "a1_c1","a1_c2","a1_c3","a1_c4",
+      "a2_c1","a2_c2","a2_c3","a2_c4",
+      "scenario_text"
     ];
-    const lines=[headers.join(",")];
+    const lines = [headers.join(",")];
 
-    for(const r of merged){
-      const base=[r.id,r.tema,r.pergunta,r.contexto,r.padrao,r.resp.VERENA,r.resp.GPT,r.resp.Gemini];
-      const a1vals=MODELS.flatMap(m => CRIT.map(c => r.a1[m][c.k]));
-      const a2vals=MODELS.flatMap(m => CRIT.map(c => r.a2[m][c.k]));
-      const all=[...base,...a1vals,...a2vals].map(csvEscape);
-      lines.push(all.join(","));
-    }
+    merged.forEach(m=>{
+      const scenario = (m.a1?.scenario || m.a2?.scenario || "");
+      const row = [
+        m.scenario_id,
+        m.final_a1, m.final_a2, m.agree_final,
+        m.a1?.c1 ?? "", m.a1?.c2 ?? "", m.a1?.c3 ?? "", m.a1?.c4 ?? "",
+        m.a2?.c1 ?? "", m.a2?.c2 ?? "", m.a2?.c3 ?? "", m.a2?.c4 ?? "",
+        scenario
+      ].map(csvSafe);
 
-    const blob=new Blob([lines.join("\n")],{type:"text/csv;charset=utf-8"});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");
-    a.href=url; a.download=`verena_pic_merged_${new Date().toISOString().slice(0,10)}.csv`;
-    document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
+      lines.push(row.join(","));
+    });
+
+    download("verena_pic_merge_a1_a2.csv", lines.join("\n"), "text/csv");
   }
 
-  $("merge").addEventListener("click", mergeNow);
-  $("csv").addEventListener("click", exportCSV);
+  function exportJSON(){
+    const out = {
+      generated_at: new Date().toISOString(),
+      source: { a1: A1?.evaluator || "A1", a2: A2?.evaluator || "A2" },
+      items: merged
+    };
+    download("Merge.json", JSON.stringify(out, null, 2), "application/json");
+  }
+
+  async function handleMerge(){
+    const f1 = document.getElementById("fileA1").files[0];
+    const f2 = document.getElementById("fileA2").files[0];
+    if(!f1 || !f2){
+      alert("Selecione os dois arquivos: A1.json e A2.json.");
+      return;
+    }
+
+    try{
+      A1 = await readJsonFile(f1);
+      A2 = await readJsonFile(f2);
+
+      if(!A1.items || !A2.items){
+        alert("Formato inesperado. Certifique-se de baixar pelo site A1 e A2.");
+        return;
+      }
+
+      buildMerged();
+      renderTable();
+      updateMetrics();
+
+      alert("Pronto ✅ Itens combinados e Kappa calculado.");
+    }catch(e){
+      alert("Erro ao ler JSON: " + (e.message || e));
+    }
+  }
+
+  function resetAll(){
+    A1 = null; A2 = null; merged = [];
+    document.getElementById("fileA1").value = "";
+    document.getElementById("fileA2").value = "";
+    document.querySelector("#tbl tbody").innerHTML = "";
+    document.getElementById("m_pairs").textContent = "—";
+    document.getElementById("m_po").textContent = "—";
+    document.getElementById("m_kappa").textContent = "—";
+    document.getElementById("m_note").textContent = "";
+    document.getElementById("btnCSV").disabled = true;
+    document.getElementById("btnJSON").disabled = true;
+  }
+
+  document.getElementById("btnMerge").onclick = handleMerge;
+  document.getElementById("btnCSV").onclick = exportCSV;
+  document.getElementById("btnJSON").onclick = exportJSON;
+  document.getElementById("btnReset").onclick = resetAll;
 </script>
 </body>
 </html>
