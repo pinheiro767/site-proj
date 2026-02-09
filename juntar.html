@@ -1,0 +1,272 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Juntar Avaliações — PIC VERENA (Kappa + CSV)</title>
+  <style>
+    :root{
+      --bg:#0b1220; --text:#eaf0ff; --muted:#a9b5d3;
+      --accent:#6ee7ff; --accent2:#a78bfa; --ok:#34d399; --warn:#fbbf24; --bad:#fb7185;
+      --r:18px;
+    }
+    body{margin:0;font-family:system-ui;background:var(--bg);color:var(--text)}
+    .wrap{max-width:1200px;margin:0 auto;padding:18px 14px 60px}
+    h1{margin:6px 0 6px;font-size:24px}
+    p{margin:0;color:var(--muted)}
+    .card{margin-top:14px;border:1px solid rgba(169,181,211,.16);border-radius:var(--r);background:rgba(26,37,68,.22);padding:14px}
+    .row{display:grid;grid-template-columns:1fr;gap:12px}
+    @media(min-width:900px){.row{grid-template-columns:1fr 1fr}}
+    label{display:block;margin:10px 0 6px;color:var(--muted);font-weight:800;font-size:13px}
+    input[type="file"]{width:100%;padding:10px;border-radius:12px;border:1px dashed rgba(169,181,211,.25);background:rgba(26,37,68,.18);color:var(--muted)}
+    button{cursor:pointer;border-radius:14px;padding:10px 14px;font-weight:900;border:1px solid rgba(169,181,211,.18);background:rgba(26,37,68,.35);color:var(--text)}
+    .primary{border-color:rgba(110,231,255,.22);background:linear-gradient(90deg, rgba(110,231,255,.22), rgba(167,139,250,.22))}
+    .tableWrap{overflow:auto;border-radius:18px;border:1px solid rgba(169,181,211,.16);margin-top:10px}
+    table{width:100%;border-collapse:separate;border-spacing:0;min-width:900px}
+    th,td{padding:10px;border-bottom:1px solid rgba(169,181,211,.12);vertical-align:top}
+    th{background:rgba(26,37,68,.5);color:var(--muted);font-size:12px;text-align:left}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid rgba(169,181,211,.18);color:var(--muted);font-size:12px}
+    .pill.ok{border-color:rgba(52,211,153,.35);color:rgba(52,211,153,.95)}
+    .pill.warn{border-color:rgba(251,191,36,.35);color:rgba(251,191,36,.95)}
+    .pill.bad{border-color:rgba(251,113,133,.35);color:rgba(251,113,133,.95)}
+    .kpiGrid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px}
+    @media(min-width:980px){.kpiGrid{grid-template-columns:repeat(4, 1fr)}}
+    .kpi{border-radius:18px;border:1px solid rgba(169,181,211,.16);background:rgba(26,37,68,.18);padding:12px}
+    .kpi .k{font-size:12px;color:var(--muted);font-weight:900}
+    .kpi .v{margin-top:8px;font-size:20px;font-weight:1000}
+    .small{font-size:12px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <h1>Juntar Avaliações (A1 + A2) — Kappa e Export CSV</h1>
+    <p>Carregue <strong>A1.json</strong> e <strong>A2.json</strong>. O sistema calcula Kappa por critério e exporta CSV.</p>
+
+    <section class="card">
+      <div class="row">
+        <div>
+          <label>Carregar A1.json</label>
+          <input type="file" id="fileA1" accept=".json,application/json" />
+        </div>
+        <div>
+          <label>Carregar A2.json</label>
+          <input type="file" id="fileA2" accept=".json,application/json" />
+        </div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="primary" id="merge">Juntar + Calcular</button>
+        <button class="primary" id="csv">Exportar CSV</button>
+      </div>
+      <div class="small" style="margin-top:10px">
+        Observação: os IDs dos cenários devem bater (ex.: Q001 em A1 e Q001 em A2).  
+        Se houver diferença, o sistema só junta os IDs que existirem nos dois arquivos.
+      </div>
+    </section>
+
+    <section class="card" id="kpis" style="display:none;">
+      <div class="kpiGrid">
+        <div class="kpi"><div class="k">Cenários juntados</div><div class="v" id="k_total">—</div></div>
+        <div class="kpi"><div class="k">VERENA (Aprov. médio)</div><div class="v" id="k_verena">—</div></div>
+        <div class="kpi"><div class="k">GPT (Aprov. médio)</div><div class="v" id="k_gpt">—</div></div>
+        <div class="kpi"><div class="k">Gemini (Aprov. médio)</div><div class="v" id="k_gemini">—</div></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 style="margin:0 0 10px">Kappa por critério (A1 vs A2)</h2>
+      <div class="tableWrap" id="kappaWrap"></div>
+    </section>
+
+    <section class="card">
+      <h2 style="margin:0 0 10px">Prévia dos cenários juntados</h2>
+      <div class="tableWrap" id="preview"></div>
+    </section>
+  </main>
+
+<script>
+  const MODELS = ["VERENA","GPT","Gemini"];
+  const CRIT = [
+    {k:"acc", n:"Acurácia"},
+    {k:"safe", n:"Segurança"},
+    {k:"conf", n:"Conformidade"},
+    {k:"clear", n:"Clareza"},
+    {k:"emp", n:"Empatia"},
+    {k:"aprov", n:"Aprovado final"}
+  ];
+
+  let A1=null, A2=null;
+  let merged=[];
+
+  const $ = (id)=>document.getElementById(id);
+  const esc = (s)=>String(s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+
+  function readJSON(file, cb){
+    const fr = new FileReader();
+    fr.onload = () => {
+      try{ cb(JSON.parse(fr.result)); }
+      catch(e){ alert("JSON inválido: " + e.message); }
+    };
+    fr.readAsText(file);
+  }
+
+  $("fileA1").addEventListener("change", e=>{
+    const f=e.target.files?.[0]; if(!f) return;
+    readJSON(f, obj=>{ A1=obj; });
+  });
+  $("fileA2").addEventListener("change", e=>{
+    const f=e.target.files?.[0]; if(!f) return;
+    readJSON(f, obj=>{ A2=obj; });
+  });
+
+  function kappaBinary(pairs){
+    let a=0,b=0,c=0,d=0;
+    for(const [x,y] of pairs){
+      const X = x?1:0, Y=y?1:0;
+      if(X===1 && Y===1) a++;
+      else if(X===1 && Y===0) b++;
+      else if(X===0 && Y===1) c++;
+      else d++;
+    }
+    const N=a+b+c+d;
+    if(N===0) return {N:0, po:0, pe:0, k:0, a,b,c,d};
+    const po=(a+d)/N;
+    const p1y=(a+b)/N, p1n=(c+d)/N;
+    const p2y=(a+c)/N, p2n=(b+d)/N;
+    const pe=(p1y*p2y)+(p1n*p2n);
+    const k=(1-pe)===0?0:(po-pe)/(1-pe);
+    return {N, po, pe, k, a,b,c,d};
+  }
+
+  function interpK(k){
+    if(k < 0) return "pior que o acaso";
+    if(k < 0.20) return "fraca";
+    if(k < 0.40) return "razoável";
+    if(k < 0.60) return "moderada";
+    if(k < 0.80) return "substancial";
+    return "quase perfeita";
+  }
+
+  function avgApproved(model){
+    if(merged.length===0) return 0;
+    let s=0;
+    for(const r of merged){
+      s += (r.a1[model].aprov + r.a2[model].aprov)/2;
+    }
+    return s/merged.length;
+  }
+
+  function mergeNow(){
+    if(!A1?.rows || !A2?.rows){
+      alert("Carregue A1.json e A2.json.");
+      return;
+    }
+    const m1 = new Map(A1.rows.map(r=>[r.id, r]));
+    const m2 = new Map(A2.rows.map(r=>[r.id, r]));
+    const ids = [...m1.keys()].filter(id=>m2.has(id)).sort();
+
+    merged = ids.map(id=>{
+      const r1 = m1.get(id);
+      const r2 = m2.get(id);
+      return {
+        id,
+        tema: r1.tema || r2.tema || "",
+        pergunta: r1.pergunta || r2.pergunta || "",
+        contexto: r1.contexto || r2.contexto || "",
+        padrao: r1.padrao || r2.padrao || "",
+        resp: r1.resp || r2.resp || {VERENA:"",GPT:"",Gemini:""},
+        a1: r1.a1,
+        a2: r2.a2
+      };
+    });
+
+    // KPIs
+    $("kpis").style.display="block";
+    $("k_total").textContent=String(merged.length);
+    $("k_verena").textContent=(avgApproved("VERENA")*100).toFixed(1)+"%";
+    $("k_gpt").textContent=(avgApproved("GPT")*100).toFixed(1)+"%";
+    $("k_gemini").textContent=(avgApproved("Gemini")*100).toFixed(1)+"%";
+
+    // Kappa table
+    let html="<table><thead><tr><th>Critério</th>";
+    for(const m of MODELS) html += `<th>${m}</th>`;
+    html += "</tr></thead><tbody>";
+
+    for(const c of CRIT){
+      html += `<tr><td><strong>${c.n}</strong></td>`;
+      for(const m of MODELS){
+        const pairs = merged.map(r=>[r.a1[m][c.k], r.a2[m][c.k]]);
+        const rk = kappaBinary(pairs);
+        const cls = rk.k>=0.6 ? "ok" : (rk.k>=0.4 ? "warn" : "bad");
+        html += `<td>
+          <div class="pill ${cls}">κ=${rk.k.toFixed(3)} • ${interpK(rk.k)}</div>
+          <div class="small" style="margin-top:6px">N=${rk.N} | (1,1)=${rk.a} (1,0)=${rk.b} (0,1)=${rk.c} (0,0)=${rk.d}</div>
+        </td>`;
+      }
+      html += "</tr>";
+    }
+    html += "</tbody></table>";
+    $("kappaWrap").innerHTML=html;
+
+    // Preview
+    let p="<table><thead><tr><th>ID</th><th>Tema</th><th>Pergunta</th><th>Respostas (resumo)</th></tr></thead><tbody>";
+    merged.forEach(r=>{
+      const rv = (r.resp.VERENA||"").slice(0,120);
+      const rg = (r.resp.GPT||"").slice(0,120);
+      const rm = (r.resp.Gemini||"").slice(0,120);
+      p += `<tr>
+        <td>${esc(r.id)}</td>
+        <td>${esc(r.tema)}</td>
+        <td class="small">${esc(r.pergunta)}</td>
+        <td class="small">
+          <strong>VERENA:</strong> ${esc(rv)}...<br>
+          <strong>GPT:</strong> ${esc(rg)}...<br>
+          <strong>Gemini:</strong> ${esc(rm)}...
+        </td>
+      </tr>`;
+    });
+    p+="</tbody></table>";
+    $("preview").innerHTML=p;
+
+    alert("Juntado com sucesso! Agora você pode exportar CSV.");
+  }
+
+  function csvEscape(v){
+    const s=String(v??"");
+    if(/[",\n]/.test(s)) return '"' + s.replaceAll('"','""') + '"';
+    return s;
+  }
+
+  function exportCSV(){
+    if(merged.length===0){
+      alert("Nada juntado ainda. Clique em Juntar + Calcular.");
+      return;
+    }
+    const headers = [
+      "id","tema","pergunta","contexto","padrao",
+      "resp_verena","resp_gpt","resp_gemini",
+      ...MODELS.flatMap(m => CRIT.map(c => `a1_${m}_${c.k}`)),
+      ...MODELS.flatMap(m => CRIT.map(c => `a2_${m}_${c.k}`))
+    ];
+    const lines=[headers.join(",")];
+
+    for(const r of merged){
+      const base=[r.id,r.tema,r.pergunta,r.contexto,r.padrao,r.resp.VERENA,r.resp.GPT,r.resp.Gemini];
+      const a1vals=MODELS.flatMap(m => CRIT.map(c => r.a1[m][c.k]));
+      const a2vals=MODELS.flatMap(m => CRIT.map(c => r.a2[m][c.k]));
+      const all=[...base,...a1vals,...a2vals].map(csvEscape);
+      lines.push(all.join(","));
+    }
+
+    const blob=new Blob([lines.join("\n")],{type:"text/csv;charset=utf-8"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url; a.download=`verena_pic_merged_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  $("merge").addEventListener("click", mergeNow);
+  $("csv").addEventListener("click", exportCSV);
+</script>
+</body>
+</html>

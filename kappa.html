@@ -1,0 +1,313 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Calculadora Kappa — VERENA PIC</title>
+
+  <!-- Usa o CSS do seu site (se existir) -->
+  <link rel="stylesheet" href="assets/css/styles.css" />
+
+  <!-- CSS extra da calculadora (completo) -->
+  <style>
+    :root{
+      --bg:#0b1220; --panel:#121b2f; --panel2:#0f1730;
+      --text:#eaf0ff; --muted:#a9b5d3;
+      --accent:#6ee7ff; --accent2:#a78bfa;
+      --shadow: 0 14px 34px rgba(0,0,0,.35);
+      --r:18px;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    }
+    body{
+      margin:0; font-family:var(--sans); color:var(--text); line-height:1.45;
+      background:
+        radial-gradient(900px 600px at 12% 10%, rgba(110,231,255,.12), transparent 60%),
+        radial-gradient(900px 600px at 90% 0%, rgba(167,139,250,.14), transparent 55%),
+        radial-gradient(900px 700px at 55% 95%, rgba(52,211,153,.10), transparent 60%),
+        var(--bg);
+    }
+    .container{max-width:1100px; margin:0 auto; padding:0 16px}
+    .topbar{
+      position:sticky; top:0; z-index:50;
+      background: rgba(11,18,32,.72);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid rgba(169,181,211,.12);
+    }
+    .topbar .container{display:flex; align-items:center; gap:14px; padding:12px 16px; flex-wrap:wrap}
+    .brand{display:flex; align-items:center; gap:12px; min-width: 260px}
+    .logo{
+      width:42px; height:42px; border-radius:14px; display:grid; place-items:center;
+      background: rgba(26,37,68,.85); border:1px solid rgba(110,231,255,.22);
+      color: var(--accent); font-weight:900;
+    }
+    .title{font-weight:900}
+    .subtitle{color:var(--muted); font-size:12.5px}
+    .nav{display:flex; gap:10px; flex-wrap:wrap; margin-left:auto}
+    .nav a{
+      color:var(--muted); text-decoration:none; font-size:13px;
+      padding:8px 10px; border-radius:999px; border:1px solid rgba(169,181,211,.18);
+      background:rgba(26,37,68,.25);
+    }
+    .nav a:hover{color:var(--text); border-color:rgba(110,231,255,.35)}
+    .kappaWrap{max-width:1100px;margin:0 auto;padding:26px 16px}
+    h2{margin:0 0 10px; font-size:22px}
+    p{margin:0; color:var(--muted)}
+    .card{
+      margin-top:14px;
+      border-radius: var(--r);
+      background: linear-gradient(180deg, rgba(18,27,47,.92), rgba(15,23,48,.86));
+      border:1px solid rgba(169,181,211,.16);
+      box-shadow: var(--shadow);
+      padding:16px;
+    }
+    .card h3{margin:0 0 10px}
+    .controls{display:grid;grid-template-columns:1fr;gap:12px}
+    @media(min-width:900px){.controls{grid-template-columns:1fr 1fr}}
+    .field{display:flex;flex-direction:column;gap:6px;min-width:220px}
+    .field label{font-size:12.5px;color:var(--muted);font-weight:900}
+    .field input{
+      padding:10px 12px;border-radius:12px;
+      border:1px solid rgba(169,181,211,.18);
+      background:rgba(26,37,68,.25);color:var(--text);
+      outline:none;
+    }
+    .field input:focus{border-color:rgba(110,231,255,.35)}
+    .btnRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .btnLocal{
+      cursor:pointer;border-radius:14px;padding:10px 14px;font-weight:900;
+      border:1px solid rgba(169,181,211,.18);
+      background:rgba(26,37,68,.35);color:var(--text);
+    }
+    .btnLocal.primary{
+      background: linear-gradient(90deg, rgba(110,231,255,.22), rgba(167,139,250,.22));
+      border-color: rgba(110,231,255,.22);
+    }
+    .matrixWrap{overflow:auto;margin-top:14px;border-radius:18px;border:1px solid rgba(169,181,211,.16)}
+    table.matrix{width:100%;border-collapse:separate;border-spacing:0;min-width:640px}
+    table.matrix th, table.matrix td{padding:10px;border-bottom:1px solid rgba(169,181,211,.12)}
+    table.matrix th{background:rgba(26,37,68,.5);color:var(--muted);font-size:12.5px}
+    table.matrix input{
+      width:90px;max-width:100%;
+      padding:8px 10px;border-radius:12px;
+      border:1px solid rgba(169,181,211,.18);
+      background:rgba(26,37,68,.25);color:var(--text);
+      outline:none;
+    }
+    .resultsGrid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:14px}
+    @media(min-width:900px){.resultsGrid{grid-template-columns:1fr 1fr 1fr}}
+    .resultCard{
+      border-radius:18px;border:1px solid rgba(169,181,211,.16);
+      background: rgba(26,37,68,.20);
+      box-shadow: var(--shadow);
+      padding:14px;
+    }
+    .resultCard .k{font-size:12px;color:var(--muted);font-weight:900}
+    .resultCard .v{margin-top:8px;font-size:22px;font-weight:1000}
+    .hint{margin-top:12px;color:var(--muted)}
+    .backlink{display:inline-block;margin-top:14px;color:var(--muted);text-decoration:none}
+    .backlink:hover{color:var(--text)}
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <div class="logo">V</div>
+        <div>
+          <div class="title">VERENA — IA em Saúde</div>
+          <div class="subtitle">Calculadora de Cohen’s Kappa (PIC)</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="index.html">Voltar ao site</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="kappaWrap">
+    <h2>Calculadora Kappa (Cohen) — 2 avaliadores</h2>
+    <p>Use para medir a concordância entre dois avaliadores ao classificar respostas (ex.: “Aprovado/Reprovado”).</p>
+
+    <section class="card">
+      <h3>1) Configure a matriz</h3>
+
+      <div class="controls">
+        <div class="field">
+          <label for="nCat">Quantidade de categorias (2 a 10)</label>
+          <input id="nCat" type="number" min="2" max="10" value="2" />
+        </div>
+
+        <div class="field">
+          <label for="labels">Rótulos (opcional, separados por vírgula)</label>
+          <input id="labels" type="text" placeholder="Aprovado, Reprovado" />
+        </div>
+      </div>
+
+      <div class="btnRow">
+        <button class="btnLocal primary" id="build">Gerar matriz</button>
+        <button class="btnLocal" id="example">Preencher exemplo (2x2)</button>
+        <button class="btnLocal" id="calc">Calcular</button>
+        <button class="btnLocal" id="clear">Zerar</button>
+      </div>
+
+      <div class="matrixWrap" id="matrixWrap" aria-live="polite"></div>
+
+      <p class="hint">
+        Para o PIC, um bom uso é avaliar “Seguro vs Não seguro” (2x2) e calcular o Kappa para mostrar confiabilidade.
+      </p>
+    </section>
+
+    <section class="resultsGrid" id="results" style="display:none;">
+      <div class="resultCard">
+        <div class="k">Po (acordo observado)</div>
+        <div class="v" id="po">—</div>
+      </div>
+      <div class="resultCard">
+        <div class="k">Pe (acordo esperado ao acaso)</div>
+        <div class="v" id="pe">—</div>
+      </div>
+      <div class="resultCard">
+        <div class="k">Kappa</div>
+        <div class="v" id="kappa">—</div>
+      </div>
+    </section>
+
+    <section class="card" id="interpCard" style="display:none;">
+      <h3>Interpretação</h3>
+      <p id="interpTxt" style="margin:0;color:var(--muted)"></p>
+    </section>
+
+    <a class="backlink" href="index.html">← Voltar para o site principal</a>
+  </main>
+
+  <script>
+    function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+    function getLabels(n){
+      const raw = (document.getElementById('labels').value || '').trim();
+      if(!raw) return Array.from({length:n}, (_,i)=>`Cat ${i+1}`);
+      const arr = raw.split(',').map(s=>s.trim()).filter(Boolean);
+      if(arr.length >= n) return arr.slice(0,n);
+      while(arr.length < n) arr.push(`Cat ${arr.length+1}`);
+      return arr;
+    }
+
+    function buildMatrix(n){
+      const labels = getLabels(n);
+      const wrap = document.getElementById('matrixWrap');
+
+      let html = '<table class="matrix" role="table">';
+      html += '<thead><tr><th></th><th colspan="'+n+'">Avaliador 2</th></tr><tr><th>Avaliador 1</th>';
+      for(let j=0;j<n;j++) html += '<th>'+labels[j]+'</th>';
+      html += '</tr></thead><tbody>';
+
+      for(let i=0;i<n;i++){
+        html += '<tr><th>'+labels[i]+'</th>';
+        for(let j=0;j<n;j++){
+          const id = `c_${i}_${j}`;
+          html += `<td><input type="number" min="0" value="0" id="${id}" /></td>`;
+        }
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+
+      wrap.innerHTML = html;
+    }
+
+    function readMatrix(n){
+      const m = [];
+      for(let i=0;i<n;i++){
+        m.push([]);
+        for(let j=0;j<n;j++){
+          const v = Number(document.getElementById(`c_${i}_${j}`).value || 0);
+          m[i][j] = (isFinite(v) && v>=0) ? v : 0;
+        }
+      }
+      return m;
+    }
+
+    function sumAll(m){
+      let s=0;
+      for(const row of m) for(const v of row) s+=v;
+      return s;
+    }
+
+    function cohenKappa(m){
+      const n = m.length;
+      const N = sumAll(m);
+      if(N === 0) return {po:0, pe:0, kappa:0, N:0};
+
+      let diag=0;
+      for(let i=0;i<n;i++) diag += m[i][i];
+      const po = diag / N;
+
+      const rowS = Array(n).fill(0);
+      const colS = Array(n).fill(0);
+      for(let i=0;i<n;i++){
+        for(let j=0;j<n;j++){
+          rowS[i] += m[i][j];
+          colS[j] += m[i][j];
+        }
+      }
+
+      let pe = 0;
+      for(let i=0;i<n;i++){
+        pe += (rowS[i]/N) * (colS[i]/N);
+      }
+
+      const denom = 1 - pe;
+      const kappa = (denom === 0) ? 0 : (po - pe) / denom;
+
+      return {po, pe, kappa, N};
+    }
+
+    function interpretKappa(k){
+      if(k < 0) return "Concordância pior que o acaso — revisar critérios/treino dos avaliadores.";
+      if(k < 0.20) return "Concordância fraca — ajustar rubrica e treinar avaliadores.";
+      if(k < 0.40) return "Concordância razoável — melhorar padronização.";
+      if(k < 0.60) return "Concordância moderada — aceitável, mas pode melhorar.";
+      if(k < 0.80) return "Concordância substancial — boa confiabilidade.";
+      return "Concordância quase perfeita — excelente confiabilidade.";
+    }
+
+    document.getElementById('build').addEventListener('click', () => {
+      const n = clamp(Number(document.getElementById('nCat').value || 2), 2, 10);
+      buildMatrix(n);
+    });
+
+    document.getElementById('example').addEventListener('click', () => {
+      document.getElementById('nCat').value = 2;
+      document.getElementById('labels').value = 'Aprovado, Reprovado';
+      buildMatrix(2);
+      document.getElementById('c_0_0').value = 35;
+      document.getElementById('c_0_1').value = 5;
+      document.getElementById('c_1_0').value = 6;
+      document.getElementById('c_1_1').value = 24;
+    });
+
+    document.getElementById('clear').addEventListener('click', () => {
+      const n = clamp(Number(document.getElementById('nCat').value || 2), 2, 10);
+      buildMatrix(n);
+      document.getElementById('results').style.display = 'none';
+      document.getElementById('interpCard').style.display = 'none';
+    });
+
+    document.getElementById('calc').addEventListener('click', () => {
+      const n = clamp(Number(document.getElementById('nCat').value || 2), 2, 10);
+      const m = readMatrix(n);
+      const r = cohenKappa(m);
+
+      document.getElementById('po').textContent = (r.po*100).toFixed(1) + '%';
+      document.getElementById('pe').textContent = (r.pe*100).toFixed(1) + '%';
+      document.getElementById('kappa').textContent = r.kappa.toFixed(3);
+
+      document.getElementById('results').style.display = 'grid';
+      document.getElementById('interpCard').style.display = 'block';
+      document.getElementById('interpTxt').textContent = `N=${r.N}. ${interpretKappa(r.kappa)}`;
+    });
+
+    buildMatrix(2);
+  </script>
+</body>
+</html>

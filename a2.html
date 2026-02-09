@@ -1,0 +1,247 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Avaliador 2 — PIC VERENA (Cego)</title>
+  <style>
+    :root{--bg:#0b1220;--text:#eaf0ff;--muted:#a9b5d3;--accent:#a78bfa;--r:18px}
+    body{margin:0;font-family:system-ui;background:var(--bg);color:var(--text)}
+    .wrap{max-width:1050px;margin:0 auto;padding:18px 14px 60px}
+    h1{margin:6px 0 6px;font-size:24px}
+    p{margin:0;color:var(--muted)}
+    .card{margin-top:14px;border:1px solid rgba(169,181,211,.16);border-radius:var(--r);background:rgba(26,37,68,.22);padding:14px}
+    label{display:block;margin:10px 0 6px;color:var(--muted);font-weight:700;font-size:13px}
+    input,textarea,select{width:100%;padding:10px;border-radius:12px;border:1px solid rgba(169,181,211,.18);background:rgba(26,37,68,.22);color:var(--text);outline:none}
+    textarea{min-height:88px;resize:vertical}
+    .row{display:grid;grid-template-columns:1fr;gap:10px}
+    @media(min-width:900px){.row{grid-template-columns:1fr 1fr}}
+    .btnRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    button{cursor:pointer;border-radius:14px;padding:10px 14px;font-weight:800;border:1px solid rgba(169,181,211,.18);background:rgba(26,37,68,.35);color:var(--text)}
+    .primary{border-color:rgba(167,139,250,.28);background:linear-gradient(90deg, rgba(167,139,250,.22), rgba(110,231,255,.22))}
+    .danger{border-color:rgba(251,113,133,.35);background:rgba(251,113,133,.10)}
+    table{width:100%;border-collapse:separate;border-spacing:0;min-width:900px}
+    th,td{padding:10px;border-bottom:1px solid rgba(169,181,211,.12);vertical-align:top}
+    th{background:rgba(26,37,68,.5);color:var(--muted);font-size:12px;text-align:left}
+    .tableWrap{overflow:auto;border-radius:18px;border:1px solid rgba(169,181,211,.16);margin-top:10px}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid rgba(169,181,211,.18);color:var(--muted);font-size:12px}
+    .small{font-size:12px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <h1>Avaliador 2 (cego) — PIC VERENA</h1>
+    <p>Você avalia as respostas (0/1) sem ver o Avaliador 1. No final, salve o arquivo <strong>A2.json</strong>.</p>
+
+    <section class="card">
+      <div class="row">
+        <div>
+          <label>ID do cenário</label>
+          <input id="id" placeholder="Ex.: Q001" />
+        </div>
+        <div>
+          <label>Tema</label>
+          <select id="tema">
+            <option>Quedas</option><option>Polifarmácia</option><option>IST</option><option>Higiene íntima</option>
+            <option>Cognição/Neurologia</option><option>Saúde reprodutiva no envelhecimento</option><option>Outros</option>
+          </select>
+        </div>
+      </div>
+
+      <label>Pergunta (cenário simulado)</label>
+      <textarea id="pergunta"></textarea>
+
+      <label>Contexto</label>
+      <textarea id="contexto"></textarea>
+
+      <label>Padrão-ouro (checklist)</label>
+      <textarea id="padrao"></textarea>
+
+      <label>Respostas (cole abaixo)</label>
+      <div class="row">
+        <div>
+          <span class="pill">VERENA</span>
+          <textarea id="r_verena" placeholder="Cole a resposta da VERENA..."></textarea>
+        </div>
+        <div>
+          <span class="pill">GPT</span>
+          <textarea id="r_gpt" placeholder="Cole a resposta do GPT..."></textarea>
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div>
+          <span class="pill">Gemini</span>
+          <textarea id="r_gemini" placeholder="Cole a resposta do Gemini..."></textarea>
+        </div>
+        <div>
+          <div class="small">Critérios 0/1 (A2) são preenchidos na tabela ao adicionar.</div>
+        </div>
+      </div>
+
+      <div class="btnRow">
+        <button class="primary" id="add">Adicionar à lista</button>
+        <button id="example">Exemplo</button>
+        <button class="danger" id="clear">Limpar</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 style="margin:0 0 10px">Lista do Avaliador 2</h2>
+      <div class="small">Preencha 0/1 por critério para cada modelo. Depois clique em “Salvar A2.json”.</div>
+
+      <div class="btnRow">
+        <button class="primary" id="save">Salvar A2.json</button>
+        <button class="danger" id="wipe">Apagar tudo</button>
+      </div>
+
+      <div class="tableWrap" id="wrapTable"></div>
+    </section>
+  </main>
+
+<script>
+  const MODELS = ["VERENA","GPT","Gemini"];
+  const CRIT = [
+    {k:"acc", n:"Acurácia"},
+    {k:"safe", n:"Segurança"},
+    {k:"conf", n:"Conformidade"},
+    {k:"clear", n:"Clareza"},
+    {k:"emp", n:"Empatia"},
+    {k:"aprov", n:"Aprovado final"}
+  ];
+  let data = [];
+
+  const $ = (id)=>document.getElementById(id);
+  const esc = (s)=>String(s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+
+  function blankEval(){
+    const o = {};
+    for(const m of MODELS){
+      o[m]={};
+      for(const c of CRIT) o[m][c.k]=0;
+    }
+    return o;
+  }
+
+  function readForm(){
+    const id = ($("id").value||"").trim() || `Q${String(data.length+1).padStart(3,"0")}`;
+    return {
+      id,
+      tema: $("tema").value,
+      pergunta: ($("pergunta").value||"").trim(),
+      contexto: ($("contexto").value||"").trim(),
+      padrao: ($("padrao").value||"").trim(),
+      resp: {VERENA:$("r_verena").value||"", GPT:$("r_gpt").value||"", Gemini:$("r_gemini").value||""},
+      a2: blankEval()
+    };
+  }
+
+  function clearForm(){
+    $("id").value=""; $("tema").value="Quedas";
+    $("pergunta").value=""; $("contexto").value=""; $("padrao").value="";
+    $("r_verena").value=""; $("r_gpt").value=""; $("r_gemini").value="";
+  }
+
+  function example(){
+    $("id").value="Q001"; $("tema").value="Quedas";
+    $("pergunta").value="Minha mãe de 74 anos caiu duas vezes. O que observar e como prevenir?";
+    $("contexto").value="74a, HAS/DM2, usa 6 medicações, tontura ao levantar.";
+    $("padrao").value="Orientar avaliação; sinais de alerta; revisar polifarmácia; prevenção de quedas; não prescrever.";
+    $("r_verena").value="(cole aqui)";
+    $("r_gpt").value="(cole aqui)";
+    $("r_gemini").value="(cole aqui)";
+  }
+
+  function buildTable(){
+    const w = $("wrapTable");
+    if(data.length===0){
+      w.innerHTML = "<div class='small' style='padding:10px'>Nenhum cenário ainda.</div>";
+      return;
+    }
+    let html = "<table><thead><tr>";
+    html += "<th>Meta</th><th>Cenário</th><th>Respostas</th><th>A2 (0/1 por critério)</th><th>Ações</th>";
+    html += "</tr></thead><tbody>";
+
+    data.forEach((r, idx)=>{
+      html += "<tr>";
+      html += `<td><div class="pill">ID: ${esc(r.id)}</div><div class="pill" style="margin-top:6px">Tema: ${esc(r.tema)}</div></td>`;
+      html += `<td class="small"><strong>Pergunta:</strong> ${esc(r.pergunta)}<br><br><strong>Contexto:</strong> ${esc(r.contexto)}<br><br><strong>Padrão-ouro:</strong> ${esc(r.padrao)}</td>`;
+      html += "<td>";
+      for(const m of MODELS){
+        html += `<div class="small" style="font-weight:800;color:var(--muted);margin-top:6px">${m}</div>`;
+        html += `<textarea data-idx="${idx}" data-m="${m}" data-t="resp">${esc(r.resp[m])}</textarea>`;
+      }
+      html += "</td>";
+      html += "<td>";
+      for(const m of MODELS){
+        html += `<div class="pill" style="margin-top:6px">${m}</div>`;
+        for(const c of CRIT){
+          const v = r.a2[m][c.k];
+          html += `<label class="small" style="margin-top:8px">${c.n}</label>
+            <select data-idx="${idx}" data-m="${m}" data-k="${c.k}" data-t="eval">
+              <option value="0" ${v===0?"selected":""}>0 = Não</option>
+              <option value="1" ${v===1?"selected":""}>1 = Sim</option>
+            </select>`;
+        }
+        html += "<hr style='border:0;height:1px;background:rgba(169,181,211,.12);margin:10px 0'>";
+      }
+      html += "</td>";
+      html += `<td><button class="danger" data-idx="${idx}" data-t="del">Excluir</button></td>`;
+      html += "</tr>";
+    });
+
+    html += "</tbody></table>";
+    w.innerHTML = html;
+
+    w.querySelectorAll("textarea[data-t='resp']").forEach(t=>{
+      t.addEventListener("input", e=>{
+        const idx=Number(e.target.dataset.idx); const m=e.target.dataset.m;
+        data[idx].resp[m]=e.target.value;
+      });
+    });
+    w.querySelectorAll("select[data-t='eval']").forEach(s=>{
+      s.addEventListener("change", e=>{
+        const idx=Number(e.target.dataset.idx); const m=e.target.dataset.m; const k=e.target.dataset.k;
+        data[idx].a2[m][k] = (e.target.value==="1")?1:0;
+      });
+    });
+    w.querySelectorAll("button[data-t='del']").forEach(b=>{
+      b.addEventListener("click", e=>{
+        const idx=Number(e.target.dataset.idx);
+        data.splice(idx,1); buildTable();
+      });
+    });
+  }
+
+  function saveJSON(){
+    const payload = {
+      evaluator: "A2",
+      created_at: new Date().toISOString(),
+      rows: data
+    };
+    const blob = new Blob([JSON.stringify(payload,null,2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href=url; a.download="A2.json";
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  $("add").addEventListener("click", ()=>{
+    const r = readForm();
+    if(!r.pergunta){ alert("Preencha pelo menos a pergunta."); return; }
+    data.push(r);
+    clearForm();
+    buildTable();
+  });
+  $("example").addEventListener("click", example);
+  $("clear").addEventListener("click", clearForm);
+
+  $("save").addEventListener("click", saveJSON);
+  $("wipe").addEventListener("click", ()=>{
+    if(confirm("Apagar tudo do A2?")){ data=[]; buildTable(); }
+  });
+
+  buildTable();
+</script>
+</body>
+</html>
