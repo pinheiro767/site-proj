@@ -1,252 +1,393 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>VERENA — Projeto de Pesquisa x PIC</title>
-  <meta name="description" content="Diferença e ligação entre Projeto de Pesquisa (P&D) e PIC (Iniciação Científica) no projeto VERENA." />
-  <link rel="stylesheet" href="assets/css/styles.css" />
+  <title>VERENA — Validação PIC (Testes, Kappa e Avaliação Cega)</title>
+  <meta name="description" content="Site de apoio do PIC do projeto VERENA: testes, avaliação cega, Kappa (Cohen) e exportação CSV." />
+
+  <style>
+    :root{
+      --bg:#070B14;
+      --panel: rgba(255,255,255,.06);
+      --panel2: rgba(255,255,255,.08);
+      --border: rgba(255,255,255,.12);
+      --text:#EEF2FF;
+      --muted: rgba(238,242,255,.70);
+      --muted2: rgba(238,242,255,.55);
+      --accent:#62E7FF;
+      --accent2:#B8A2FF;
+      --ok:#34D399;
+      --warn:#FBBF24;
+      --bad:#FB7185;
+      --shadow: 0 18px 50px rgba(0,0,0,.50);
+      --r:22px;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
+      line-height:1.45;
+      background:
+        radial-gradient(1200px 700px at 12% 10%, rgba(98,231,255,.16), transparent 60%),
+        radial-gradient(1200px 700px at 90% 0%, rgba(184,162,255,.18), transparent 55%),
+        radial-gradient(1000px 750px at 55% 95%, rgba(52,211,153,.10), transparent 60%),
+        var(--bg);
+    }
+
+    .container{max-width:1120px; margin:0 auto; padding:0 18px}
+
+    /* Topbar */
+    .topbar{
+      position:sticky; top:0; z-index:50;
+      background: rgba(7,11,20,.66);
+      backdrop-filter: blur(12px);
+      border-bottom:1px solid var(--border);
+    }
+    .topbar .container{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px; padding:14px 18px;
+    }
+    .brand{display:flex; align-items:center; gap:12px}
+    .logo{
+      width:44px; height:44px; border-radius:16px;
+      display:grid; place-items:center;
+      background: linear-gradient(135deg, rgba(98,231,255,.20), rgba(184,162,255,.16));
+      border:1px solid rgba(98,231,255,.24);
+      box-shadow: 0 10px 26px rgba(0,0,0,.35);
+      font-weight:1000;
+      letter-spacing:.3px;
+    }
+    .brandText{display:flex; flex-direction:column}
+    .brandText strong{font-size:14px}
+    .brandText span{font-size:12px; color:var(--muted2)}
+
+    .nav{display:flex; gap:10px; flex-wrap:wrap}
+    .nav a{
+      text-decoration:none; color:var(--muted);
+      padding:8px 12px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      font-size:13px; font-weight:700;
+    }
+    .nav a:hover{color:var(--text); border-color: rgba(98,231,255,.28)}
+
+    /* Hero */
+    .hero{padding:34px 0 12px}
+    .heroGrid{
+      display:grid; gap:14px;
+      grid-template-columns:1fr;
+    }
+    @media(min-width:980px){
+      .heroGrid{grid-template-columns: 1.2fr .8fr;}
+    }
+
+    .headline{
+      border-radius: var(--r);
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+      border:1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding:22px;
+      overflow:hidden;
+      position:relative;
+    }
+    .headline:before{
+      content:"";
+      position:absolute; inset:-2px;
+      background:
+        radial-gradient(420px 220px at 18% 18%, rgba(98,231,255,.18), transparent 60%),
+        radial-gradient(420px 220px at 82% 26%, rgba(184,162,255,.18), transparent 60%);
+      pointer-events:none;
+    }
+    .headline > *{position:relative}
+
+    h1{
+      margin:0 0 10px;
+      font-size: clamp(26px, 3.4vw, 42px);
+      letter-spacing:-.6px;
+      line-height:1.08;
+    }
+    .lead{
+      margin:0;
+      color:var(--muted);
+      max-width: 70ch;
+      font-size:15.5px;
+    }
+
+    .pillRow{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 12px; border-radius:999px;
+      background: rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.10);
+      color: var(--muted);
+      font-size:12.5px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+    .dot{width:8px;height:8px;border-radius:99px;background:rgba(98,231,255,.9)}
+    .dot.ok{background:rgba(52,211,153,.95)}
+    .dot.p{background:rgba(184,162,255,.95)}
+
+    /* Action panel */
+    .actions{
+      border-radius: var(--r);
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.05);
+      box-shadow: var(--shadow);
+      padding:18px;
+    }
+    .actions h2{margin:0 0 10px; font-size:16px}
+    .actions p{margin:0 0 14px; color:var(--muted); font-size:13.5px}
+
+    .btnGrid{
+      display:grid; gap:10px;
+      grid-template-columns: 1fr;
+    }
+    @media(min-width:640px){ .btnGrid{grid-template-columns: 1fr 1fr;} }
+    @media(min-width:980px){ .btnGrid{grid-template-columns: 1fr;} }
+
+    .btn{
+      text-decoration:none;
+      display:flex; justify-content:space-between; align-items:center;
+      gap:12px;
+      padding:14px 14px;
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      color: var(--text);
+      font-weight:900;
+      transition: transform .08s ease, border-color .12s ease, background .12s ease;
+    }
+    .btn:hover{
+      border-color: rgba(98,231,255,.28);
+      background: rgba(255,255,255,.07);
+      transform: translateY(-1px);
+    }
+    .btn.primary{
+      border-color: rgba(98,231,255,.30);
+      background: linear-gradient(135deg, rgba(98,231,255,.16), rgba(184,162,255,.12));
+    }
+    .btn small{
+      display:block; margin-top:3px;
+      color: var(--muted);
+      font-weight:700;
+      font-size:12.5px;
+    }
+    .arrow{
+      width:38px; height:38px;
+      border-radius:14px;
+      display:grid; place-items:center;
+      background: rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.12);
+      color: var(--muted);
+      flex: 0 0 auto;
+    }
+
+    /* Sections */
+    .section{margin-top:16px}
+    .cards{
+      display:grid; gap:12px;
+      grid-template-columns:1fr;
+    }
+    @media(min-width:980px){ .cards{grid-template-columns: 1fr 1fr;} }
+
+    .card{
+      border-radius: var(--r);
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.05);
+      box-shadow: var(--shadow);
+      padding:18px;
+    }
+    .card h3{margin:0 0 10px; font-size:16px}
+    .card p{margin:0; color:var(--muted); font-size:13.8px}
+    .list{margin:12px 0 0; padding-left:18px; color:var(--muted)}
+    .list li{margin:6px 0}
+
+    .callout{
+      margin-top:12px;
+      border-radius: var(--r);
+      border:1px solid rgba(98,231,255,.18);
+      background: rgba(98,231,255,.07);
+      padding:14px;
+      color: var(--muted);
+      font-size:13.5px;
+    }
+
+    footer{
+      padding:18px 0 36px;
+      color:var(--muted2);
+      font-size:12.5px;
+      text-align:center;
+    }
+    .sep{height:1px;background:rgba(255,255,255,.10);margin:18px 0}
+  </style>
 </head>
+
 <body>
   <header class="topbar">
     <div class="container">
       <div class="brand">
         <div class="logo">V</div>
-        <div>
-          <div class="title">VERENA — IA em Saúde</div>
-          <div class="subtitle">Projeto de Pesquisa (P&D) e PIC (Validação)</div>
+        <div class="brandText">
+          <strong>VERENA — Validação PIC</strong>
+          <span>Testes • Avaliação cega • Kappa • CSV</span>
         </div>
       </div>
 
       <nav class="nav">
-        <a href="#resumo">Resumo</a>
-        <a href="#verena">O que faz</a>
-        <a href="#diferenca">Diferenças</a>
-        <a href="#ligacao">Ligação</a>
-        <a href="#pesquisa">Projeto grande</a>
-        <a href="#pic">PIC</a>
-        <a href="#faq">Perguntas</a>
+        <a href="#como-usar">Como usar</a>
+        <a href="testes.html">Testes</a>
+        <a href="a1.html">A1</a>
+        <a href="a2.html">A2</a>
+        <a href="juntar.html">Juntar</a>
+        <a href="kappa.html">Kappa</a>
       </nav>
-
-      <button class="menuBtn" id="menuBtn" aria-label="Abrir menu">☰</button>
     </div>
   </header>
 
-  <main>
+  <main class="container">
     <section class="hero">
-      <div class="container">
-        <span class="pill">Site explicativo • linguagem simples</span>
-        <h1>Projeto grande <span class="accent">constrói</span>. PIC <span class="accent2">testa e valida</span>.</h1>
-        <p class="lead">
-          Aqui você vê como o <strong>Projeto de Pesquisa (P&D)</strong> cria a VERENA (app educacional)
-          e como os <strong>PICs</strong> dos alunos fazem testes e geram evidências, comparando também com GPT/Gemini.
-        </p>
-        <div class="heroBtns">
-          <a class="btn primary" href="#diferenca">Ver diferença</a>
-          <a class="btn ghost" href="#faq">Ver perguntas</a>
+      <div class="heroGrid">
+        <div class="headline">
+          <h1>Comparar VERENA × GPT × Gemini com método e evidência</h1>
+          <p class="lead">
+            Este site organiza os testes do PIC: cenários simulados, avaliação por critérios (0/1),
+            concordância entre avaliadores (Cohen’s Kappa) e exportação em CSV para relatório.
+          </p>
+
+          <div class="pillRow">
+            <span class="pill"><span class="dot"></span> Site estático (GitHub Pages)</span>
+            <span class="pill"><span class="dot ok"></span> Avaliação cega (A1/A2)</span>
+            <span class="pill"><span class="dot p"></span> Kappa automático + CSV</span>
+          </div>
+
+          <div class="callout">
+            <strong>Nota importante:</strong> use cenários simulados (sem dados pessoais).  
+            A VERENA deve atuar como ferramenta educativa, sem diagnóstico/prescrição.
+          </div>
         </div>
 
-        <div class="note">
-          <strong>Importante:</strong> a VERENA é educativa e informacional — não diagnostica e não prescreve.
+        <aside class="actions">
+          <h2>Acesso rápido</h2>
+          <p>Escolha o modo de uso. O mais recomendado é <strong>avaliação cega</strong>.</p>
+
+          <div class="btnGrid">
+            <a class="btn primary" href="testes.html">
+              <div>
+                Testes PIC (modo simples)
+                <small>Cadastrar cenários • avaliar • métricas • Kappa • export CSV</small>
+              </div>
+              <div class="arrow">→</div>
+            </a>
+
+            <a class="btn" href="a1.html">
+              <div>
+                Avaliador 1 (cego)
+                <small>Preenche critérios 0/1 e salva A1.json</small>
+              </div>
+              <div class="arrow">→</div>
+            </a>
+
+            <a class="btn" href="a2.html">
+              <div>
+                Avaliador 2 (cego)
+                <small>Preenche critérios 0/1 e salva A2.json</small>
+              </div>
+              <div class="arrow">→</div>
+            </a>
+
+            <a class="btn" href="juntar.html">
+              <div>
+                Juntar resultados
+                <small>Carrega A1.json + A2.json • calcula Kappa • exporta CSV</small>
+              </div>
+              <div class="arrow">→</div>
+            </a>
+
+            <a class="btn" href="kappa.html">
+              <div>
+                Kappa (manual)
+                <small>Quando você já tem a matriz de contagens</small>
+              </div>
+              <div class="arrow">→</div>
+            </a>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <div class="sep"></div>
+
+    <section class="section">
+      <div class="cards">
+        <div class="card">
+          <h3>Projeto de Pesquisa (macro)</h3>
+          <p>
+            Estrutura maior do VERENA: desenvolvimento, bases técnico-científicas,
+            conformidade jurídica e sanitária e resultados esperados.
+          </p>
+          <ul class="list">
+            <li>Descrição técnica (PWA, infraestrutura, segurança)</li>
+            <li>Fundamentação em saúde (neurociência, envelhecimento)</li>
+            <li>Conformidade (LGPD, Estatuto do Idoso, etc.)</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>PIC (validação com alunos)</h3>
+          <p>
+            Parte prática: os alunos aplicam cenários simulados e medem qualidade,
+            segurança e consistência das avaliações.
+          </p>
+          <ul class="list">
+            <li>Cenários + padrão-ouro (checklist)</li>
+            <li>Comparação VERENA × GPT × Gemini</li>
+            <li>Kappa (A1 vs A2) + exportação em CSV</li>
+          </ul>
         </div>
       </div>
     </section>
 
-    <section id="resumo" class="section">
-      <div class="container">
-        <h2>Resumo executivo</h2>
-        <div class="grid2">
-          <div class="card">
-            <h3>O que é a VERENA?</h3>
-            <p>Um app educacional para apoiar cuidadores e idosos com explicações simples sobre temas de saúde e direitos.</p>
-            <ul class="bullets">
-              <li>Funciona em celular, tablet e computador</li>
-              <li>Permite texto, voz e envio de imagens/PDF</li>
-              <li>Explica de forma educativa</li>
+    <section id="como-usar" class="section">
+      <div class="card">
+        <h3>Como usar (bem fácil)</h3>
+        <div class="cards" style="margin-top:12px">
+          <div class="card" style="box-shadow:none">
+            <h3 style="margin-top:0">Modo simples (rápido)</h3>
+            <ul class="list">
+              <li>Abra <strong>testes.html</strong>.</li>
+              <li>Cadastre cenário: pergunta + contexto + padrão-ouro.</li>
+              <li>Cole respostas: <strong>VERENA</strong>, <strong>GPT</strong>, <strong>Gemini</strong>.</li>
+              <li>Marque 0/1 nos critérios.</li>
+              <li>Clique em <strong>Calcular</strong> e depois <strong>Exportar CSV</strong>.</li>
             </ul>
           </div>
-          <div class="card">
-            <h3>Por que dois projetos?</h3>
-            <p>Porque o modelo acadêmico correto é: <strong>um projeto cria</strong> e <strong>outros testam</strong>.</p>
-            <ul class="bullets">
-              <li>Projeto grande: desenvolvimento e controle</li>
-              <li>PIC: testes, métricas e relatórios</li>
-              <li>Não se repetem — se complementam</li>
+
+          <div class="card" style="box-shadow:none">
+            <h3 style="margin-top:0">Modo recomendado (avaliação cega)</h3>
+            <ul class="list">
+              <li>A1 usa <strong>a1.html</strong> e salva <strong>A1.json</strong>.</li>
+              <li>A2 usa <strong>a2.html</strong> e salva <strong>A2.json</strong>.</li>
+              <li>Você abre <strong>juntar.html</strong>, carrega os 2 arquivos.</li>
+              <li>O sistema calcula <strong>Kappa</strong> e exporta <strong>CSV</strong>.</li>
             </ul>
           </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="verena" class="section alt">
-      <div class="container">
-        <h2>O que a VERENA faz</h2>
-        <div class="grid3">
-          <div class="card">
-            <h3>Explica em linguagem simples</h3>
-            <p>Tradução educativa de termos técnicos para apoiar o cuidado.</p>
-          </div>
-          <div class="card">
-            <h3>É multimodal</h3>
-            <p>Texto, voz, imagens e PDFs (explicação educativa do conteúdo).</p>
-          </div>
-          <div class="card">
-            <h3>Tem limites de segurança</h3>
-            <p>Não diagnostica, não prescreve, orienta procurar profissionais.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="diferenca" class="section">
-      <div class="container">
-        <h2>Diferença: Projeto grande x PIC</h2>
-        <div class="tableWrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Aspecto</th>
-                <th>Projeto de Pesquisa (P&D)</th>
-                <th>PIC (Iniciação Científica)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Objetivo</td>
-                <td>Construir e consolidar a VERENA (app + regras + segurança)</td>
-                <td>Testar, medir qualidade e comparar (inclui GPT/Gemini)</td>
-              </tr>
-              <tr>
-                <td>Entrega</td>
-                <td>Plataforma funcional e metodologicamente delimitada</td>
-                <td>Relatórios, métricas, evidência científica</td>
-              </tr>
-              <tr>
-                <td>Como faz</td>
-                <td>Engenharia + base científica + limites éticos/jurídicos</td>
-                <td>Cenários simulados + auditoria + concordância avaliadores</td>
-              </tr>
-            </tbody>
-          </table>
         </div>
 
         <div class="callout">
-          <strong>Frase pronta:</strong> “O projeto grande constrói e organiza. O PIC testa, mede e valida.”
+          <strong>Critérios (0/1):</strong> 0 = não atende / 1 = atende.  
+          “Aprovado final” é a síntese geral da resposta.
         </div>
       </div>
     </section>
 
-    <section id="ligacao" class="section alt">
-      <div class="container">
-        <h2>Ligação entre os projetos</h2>
-        <div class="flow">
-          <div class="flowStep">
-            <div class="flowTag">Etapa 1</div>
-            <h3>Projeto de Pesquisa</h3>
-            <ul class="bullets">
-              <li>App pronto + segurança + conformidade</li>
-              <li>Critérios de avaliação definidos</li>
-            </ul>
-          </div>
-
-          <div class="flowArrow">→</div>
-
-          <div class="flowStep">
-            <div class="flowTag">Etapa 2</div>
-            <h3>PIC</h3>
-            <ul class="bullets">
-              <li>Testes controlados e cenários simulados</li>
-              <li>Benchmarking com GPT/Gemini</li>
-            </ul>
-          </div>
-
-          <div class="flowArrow">→</div>
-
-          <div class="flowStep">
-            <div class="flowTag">Etapa 3</div>
-            <h3>Resultado integrado</h3>
-            <ul class="bullets">
-              <li>Evidência científica + melhorias</li>
-              <li>Base para publicações e extensão</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="pesquisa" class="section">
-      <div class="container">
-        <h2>Como será o Projeto de Pesquisa (P&D)</h2>
-        <div class="grid2">
-          <div class="card">
-            <h3>Foco</h3>
-            <ul class="bullets">
-              <li>Consolidar o app VERENA</li>
-              <li>Delimitar uso educativo com salvaguardas</li>
-              <li>Garantir base científica e jurídica</li>
-            </ul>
-          </div>
-          <div class="card">
-            <h3>Componentes</h3>
-            <ul class="bullets">
-              <li>Tecnologia (PWA, nuvem, segurança)</li>
-              <li>Saúde (idoso, quedas, polifarmácia)</li>
-              <li>Direitos (Estatuto do Idoso, LGPD)</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="pic" class="section alt">
-      <div class="container">
-        <h2>Como será o PIC (testes com alunos)</h2>
-        <div class="grid2">
-          <div class="card">
-            <h3>O que os alunos fazem</h3>
-            <ul class="bullets">
-              <li>Cria cenários simulados (perguntas)</li>
-              <li>Roda na VERENA e em GPT/Gemini</li>
-              <li>Avalia acurácia, clareza e segurança</li>
-            </ul>
-          </div>
-          <div class="card">
-            <h3>O que entregam</h3>
-            <ul class="bullets">
-              <li>Métricas e relatório</li>
-              <li>Lista de falhas e melhorias</li>
-              <li>Possível artigo científico</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="faq" class="section">
-      <div class="container">
-        <h2>Perguntas comuns</h2>
-        <div class="faq">
-          <details>
-            <summary>Se o app já existe, por que precisa de PIC?</summary>
-            <p>Porque o PIC gera dados científicos para provar segurança e identificar pontos de melhoria.</p>
-          </details>
-          <details>
-            <summary>A VERENA substitui médico?</summary>
-            <p>Não. Ela é educativa e orienta procurar profissionais quando necessário.</p>
-          </details>
-          <details>
-            <summary>Por que coordenação geral e coorientação?</summary>
-            <p>Por exigência institucional (docente efetiva). Você entra como coorientadora pela execução técnico-científica.</p>
-          </details>
-        </div>
-
-        <footer class="footer">
-          <p><strong>VERENA</strong> • site estático • HTML/CSS/JS</p>
-        </footer>
-      </div>
-    </section>
+    <footer>
+      VERENA • PIC • Interface estática • pronta para GitHub Pages
+    </footer>
   </main>
-
-  <script src="assets/js/main.js"></script>
 </body>
 </html>
